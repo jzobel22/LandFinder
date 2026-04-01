@@ -159,7 +159,11 @@ textarea:focus{border-color:var(--acc);box-shadow:0 0 0 2px var(--acc2)}
 
       <!-- SEARCH -->
       <div class="tab-panel active" id="panel-search">
-        <div class="controls">
+        <div class="controls" id="searchControls">
+          <div class="ctrl-header" onclick="toggleControls()" style="display:none;cursor:pointer;font-size:.74rem;font-weight:600;color:var(--acc);margin-bottom:4px;display:flex;justify-content:space-between;align-items:center">
+            <span id="ctrlLabel">Search Criteria</span><span id="ctrlArrow">▾</span>
+          </div>
+          <div id="ctrlBody">
           <div class="row">
             <div class="field"><label>Towns (ctrl/cmd+click for multiple)</label>
               <select id="muni" multiple size="5" style="min-height:90px">
@@ -220,7 +224,8 @@ textarea:focus{border-color:var(--acc);box-shadow:0 0 0 2px var(--acc2)}
               <span><span class="ptag sent">Sent</span> You already mailed them</span>
             </div>
           </div>
-          <p class="hint" style="margin-top:4px">Only parcels inside the circle are shown. Drag the circle on the map to move it. Set radius to "No limit" for all results.</p>
+          <p class="hint" style="margin-top:4px">Only parcels inside the circle are shown. Set radius to "No limit" for all results.</p>
+          </div><!-- end ctrlBody -->
         </div>
         <div class="sbar" id="status"></div>
         <div class="list-tools" style="padding:6px 12px;border-bottom:1px solid var(--brd);display:none;gap:6px;flex-shrink:0;align-items:center" id="listTools">
@@ -371,7 +376,7 @@ function createCircle(){
   // Make circle draggable
   let dragging=false, startLatLng;
   searchCircle.on('mousedown',function(e){
-    if(placingCircle)return;
+    if(placingCircle||circleLocked)return;
     dragging=true;
     startLatLng=e.latlng;
     map.dragging.disable();
@@ -405,6 +410,34 @@ function enablePlaceCircle(){
   btn.style.background='var(--acc)';
   btn.style.color='#fff';
   btn.style.borderColor='var(--acc)';
+}
+
+// ======= COLLAPSE CONTROLS =======
+let ctrlCollapsed=false;
+function toggleControls(){
+  ctrlCollapsed=!ctrlCollapsed;
+  document.getElementById('ctrlBody').style.display=ctrlCollapsed?'none':'';
+  document.getElementById('ctrlArrow').textContent=ctrlCollapsed?'▸':'▾';
+  if(!ctrlCollapsed)unlockCircle();
+}
+
+function collapseControls(){
+  const header=document.querySelector('.ctrl-header');
+  header.style.display='flex';
+  ctrlCollapsed=true;
+  document.getElementById('ctrlBody').style.display='none';
+  document.getElementById('ctrlArrow').textContent='▸';
+}
+
+// ======= LOCK CIRCLE =======
+let circleLocked=false;
+function lockCircle(){
+  circleLocked=true;
+  if(searchCircle)searchCircle.setStyle({interactive:false});
+}
+function unlockCircle(){
+  circleLocked=false;
+  if(searchCircle)searchCircle.setStyle({interactive:true});
 }
 
 // ======= TABS =======
@@ -508,6 +541,8 @@ async function runSearch(){
     renderList();plotMap();
     document.getElementById('abar').style.display='flex';
     document.getElementById('listTools').style.display='flex';
+    lockCircle();
+    collapseControls();
   }catch(e){ss('er','Error: '+e.message)}
 }
 
