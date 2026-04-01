@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Land Finder Pro — Monroe County</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://unpkg.com/esri-leaflet@3.0.12/dist/esri-leaflet.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
+:root {
+  --bg:#0c0e14;--s1:#14171f;--s2:#1c2029;--s3:#242833;--brd:#2a2f3d;
+  --t:#e2e4ed;--td:#7d8296;--acc:#4c8dff;--acc2:rgba(76,141,255,.12);
+  --grn:#34d399;--grn2:rgba(52,211,153,.12);--amb:#f59e0b;--amb2:rgba(245,158,11,.12);
+  --red:#ef4444;--red2:rgba(239,68,68,.12);--purp:#a78bfa;--purp2:rgba(167,139,250,.12);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--t);height:100vh;overflow:hidden}
+.app{display:flex;flex-direction:column;height:100vh}
+.topbar{padding:10px 16px;background:var(--s1);border-bottom:1px solid var(--brd);display:flex;align-items:center;gap:12px;flex-shrink:0}
+.topbar h1{font-size:1rem;font-weight:700;letter-spacing:-.02em;white-space:nowrap}
+.topbar h1 span{color:var(--acc)}
+.topbar .badge{font-size:.65rem;background:var(--grn2);color:var(--grn);padding:2px 8px;border-radius:4px;font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+.main{display:flex;flex:1;overflow:hidden}
+.sidebar{width:440px;min-width:340px;display:flex;flex-direction:column;border-right:1px solid var(--brd);background:var(--s1);overflow:hidden}
+.map-area{flex:1;position:relative}
+#map{height:100%;width:100%}
+
+/* Tabs */
+.tabs{display:flex;border-bottom:1px solid var(--brd);background:var(--s2);flex-shrink:0}
+.tab{flex:1;padding:9px 4px;text-align:center;font-size:.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--td);cursor:pointer;border-bottom:2px solid transparent;transition:.2s}
+.tab:hover{color:var(--t);background:rgba(255,255,255,.02)}
+.tab.active{color:var(--acc);border-bottom-color:var(--acc)}
+.tab-panel{display:none;flex:1;overflow:hidden;flex-direction:column}
+.tab-panel.active{display:flex}
+
+/* Controls */
+.controls{padding:12px;display:flex;flex-direction:column;gap:8px;border-bottom:1px solid var(--brd);flex-shrink:0}
+.row{display:flex;gap:6px}
+.field{display:flex;flex-direction:column;gap:3px;flex:1}
+.field label{font-size:.65rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--td)}
+select,input[type="number"],input[type="text"]{background:var(--s3);border:1px solid var(--brd);color:var(--t);padding:7px 9px;border-radius:5px;font-family:'DM Sans',sans-serif;font-size:.82rem;outline:none}
+select:focus,input:focus{border-color:var(--acc);box-shadow:0 0 0 2px var(--acc2)}
+textarea{background:var(--s3);border:1px solid var(--brd);color:var(--t);padding:9px;border-radius:5px;font-family:'DM Sans',sans-serif;font-size:.82rem;resize:vertical;min-height:100px;line-height:1.5;outline:none}
+textarea:focus{border-color:var(--acc);box-shadow:0 0 0 2px var(--acc2)}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:5px;padding:7px 14px;border-radius:6px;font-family:'DM Sans',sans-serif;font-size:.78rem;font-weight:600;border:none;cursor:pointer;transition:.15s;white-space:nowrap}
+.btn:hover{filter:brightness(1.12)}.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn-p{background:var(--acc);color:#fff}.btn-g{background:var(--grn);color:#000}.btn-a{background:var(--amb);color:#000}
+.btn-o{background:transparent;color:var(--td);border:1px solid var(--brd)}.btn-o:hover{border-color:var(--td);color:var(--t)}
+.btn-sm{padding:4px 9px;font-size:.72rem}
+
+/* Status */
+.sbar{padding:7px 12px;font-size:.75rem;font-family:'DM Mono',monospace;background:var(--s2);border-bottom:1px solid var(--brd);display:none;flex-shrink:0}
+.sbar.show{display:block}.sbar.ld{color:var(--acc)}.sbar.er{color:var(--red)}.sbar.ok{color:var(--grn)}
+.spin{display:inline-block;width:11px;height:11px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:sp .5s linear infinite;vertical-align:middle;margin-right:5px}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+/* Parcel list */
+.plist{flex:1;overflow-y:auto}
+.pitem{padding:10px 12px;border-bottom:1px solid var(--brd);cursor:pointer;transition:.12s;display:flex;gap:8px;align-items:flex-start}
+.pitem:hover{background:rgba(255,255,255,.02)}.pitem.sel{background:var(--acc2)}
+.pchk{width:16px;height:16px;border-radius:3px;border:2px solid var(--brd);flex-shrink:0;margin-top:2px;display:flex;align-items:center;justify-content:center;transition:.15s}
+.pitem.sel .pchk{background:var(--acc);border-color:var(--acc)}
+.pitem.sel .pchk::after{content:'✓';color:#fff;font-size:10px;font-weight:700}
+.pflyto{width:24px;height:24px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--acc);cursor:pointer;flex-shrink:0;margin-top:1px;transition:.15s;opacity:.5}
+.pflyto:hover{opacity:1;background:var(--acc2)}
+.pinfo{flex:1;min-width:0}
+.powner{font-weight:600;font-size:.84rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.paddr{font-size:.74rem;color:var(--td);margin-top:1px}
+.pmeta{font-size:.7rem;color:var(--td);display:flex;gap:8px;flex-wrap:wrap;margin-top:3px}
+.pacres{background:var(--grn2);color:var(--grn);padding:1px 6px;border-radius:3px;font-family:'DM Mono',monospace;font-size:.72rem;font-weight:500}
+.pscore{padding:1px 6px;border-radius:3px;font-size:.72rem;font-weight:600;font-family:'DM Mono',monospace}
+.pscore.hot{background:var(--red2);color:var(--red)}.pscore.warm{background:var(--amb2);color:var(--amb)}.pscore.cool{background:var(--purp2);color:var(--purp)}
+.pmail{font-size:.72rem;color:var(--acc);margin-top:2px}
+.ptag{font-size:.65rem;padding:1px 5px;border-radius:3px;font-weight:500}
+.ptag.vacant{background:var(--grn2);color:var(--grn)}
+.ptag.noutils{background:var(--amb2);color:var(--amb)}
+.ptag.absentee{background:var(--purp2);color:var(--purp)}
+.ptag.sent{background:var(--s3);color:var(--td)}
+
+/* Actions bar */
+.abar{padding:8px 12px;border-top:1px solid var(--brd);background:var(--s2);display:flex;gap:6px;align-items:center;flex-wrap:wrap;flex-shrink:0}
+.abar .cnt{font-size:.74rem;color:var(--td);margin-right:auto}.abar .cnt strong{color:var(--acc)}
+
+/* Tracker */
+.tracker-item{padding:10px 12px;border-bottom:1px solid var(--brd);display:flex;justify-content:space-between;align-items:center}
+.tracker-item .tleft{flex:1}
+.tracker-item .towner{font-weight:600;font-size:.82rem}
+.tracker-item .tdate{font-size:.72rem;color:var(--td)}
+.tracker-item .tstatus{font-size:.72rem;padding:3px 8px;border-radius:4px;font-weight:600;cursor:pointer}
+.tstatus.pending{background:var(--amb2);color:var(--amb)}
+.tstatus.responded{background:var(--grn2);color:var(--grn)}
+.tstatus.declined{background:var(--red2);color:var(--red)}
+.tstatus.followup{background:var(--purp2);color:var(--purp)}
+
+/* Postcard */
+.pc-config{padding:14px;display:flex;flex-direction:column;gap:10px;overflow-y:auto;flex:1}
+.pc-config h3{font-size:.85rem;font-weight:600}
+.preview-card{background:#fff;color:#1a1a1a;border-radius:6px;padding:22px 26px;font-family:Georgia,serif;font-size:.82rem;line-height:1.6;box-shadow:0 4px 20px rgba(0,0,0,.3);min-height:160px}
+.preview-card .pfrom{font-size:.75rem;color:#666;margin-bottom:14px}
+.preview-card .pto{font-weight:700;margin-bottom:10px}
+.preview-card .pbody{white-space:pre-wrap}
+.hint{font-size:.72rem;color:var(--td);line-height:1.5}
+
+/* Overlay panel */
+.overlay-panel{position:absolute;top:10px;left:10px;z-index:1000;background:var(--s1);border:1px solid var(--brd);border-radius:8px;padding:0;font-size:.75rem;min-width:180px;box-shadow:0 4px 20px rgba(0,0,0,.4)}
+.overlay-panel .op-header{padding:8px 10px;font-weight:600;font-size:.72rem;text-transform:uppercase;letter-spacing:.04em;color:var(--td);border-bottom:1px solid var(--brd);cursor:pointer;display:flex;justify-content:space-between;align-items:center}
+.overlay-panel .op-body{padding:6px 10px;display:flex;flex-direction:column;gap:4px}
+.overlay-panel.collapsed .op-body{display:none}
+.ov-row{display:flex;align-items:center;gap:6px;padding:3px 0;cursor:pointer}
+.ov-row input{margin:0;cursor:pointer}
+.ov-row .ov-swatch{width:12px;height:12px;border-radius:2px;flex-shrink:0}
+.ov-row label{cursor:pointer;color:var(--t);font-size:.74rem;user-select:none}
+
+/* Leaflet */
+.leaflet-popup-content-wrapper{background:var(--s1)!important;color:var(--t)!important;border-radius:8px!important;border:1px solid var(--brd)!important;box-shadow:0 8px 32px rgba(0,0,0,.4)!important}
+.leaflet-popup-tip{background:var(--s1)!important}
+.leaflet-popup-content{font-family:'DM Sans',sans-serif!important;font-size:.78rem!important;line-height:1.5!important}
+.leaflet-popup-content a{color:var(--acc)!important}
+.leaflet-popup-close-button{color:var(--td)!important}
+
+/* Print */
+@media print{
+  body{background:#fff}
+  .app{display:block;height:auto}
+  .topbar,.sidebar,.map-area{display:none!important}
+  .print-only{display:block!important}
+  .print-pc{page-break-after:always;width:6in;height:4in;padding:.35in;font-family:Georgia,serif;font-size:10.5pt;line-height:1.5;color:#000;box-sizing:border-box}
+  .print-pc:last-child{page-break-after:auto}
+  .print-pc .pf{font-size:8.5pt;color:#555;margin-bottom:10pt}
+  .print-pc .pt{font-weight:bold;margin-bottom:8pt;font-size:10.5pt}
+  .print-pc .pb{white-space:pre-wrap;font-size:10pt}
+}
+.print-only{display:none}
+
+@media(max-width:800px){
+  .main{flex-direction:column}
+  .sidebar{width:100%;min-width:unset;max-height:55vh;border-right:none;border-bottom:1px solid var(--brd)}
+  .map-area{min-height:250px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <h1><span>▪</span> Land Finder Pro</h1>
+    <span class="badge">v2 — Full Mailing Addresses</span>
+    <span style="color:var(--td);font-size:.75rem;margin-left:auto">Monroe County, NY</span>
+  </div>
+  <div class="main">
+    <div class="sidebar">
+      <div class="tabs">
+        <div class="tab active" data-tab="search" onclick="switchTab('search')">Search</div>
+        <div class="tab" data-tab="postcard" onclick="switchTab('postcard')">Postcards</div>
+        <div class="tab" data-tab="tracker" onclick="switchTab('tracker')">Tracker</div>
+      </div>
+
+      <!-- SEARCH -->
+      <div class="tab-panel active" id="panel-search">
+        <div class="controls">
+          <div class="row">
+            <div class="field"><label>Towns (ctrl/cmd+click for multiple)</label>
+              <select id="muni" multiple size="5" style="min-height:90px">
+                <option value="Greece" selected>Greece</option>
+                <option value="Parma" selected>Parma</option>
+                <option value="Brighton">Brighton</option>
+                <option value="Chili">Chili</option>
+                <option value="Clarkson">Clarkson</option>
+                <option value="Gates">Gates</option>
+                <option value="Hamlin">Hamlin</option>
+                <option value="Henrietta">Henrietta</option>
+                <option value="Irondequoit">Irondequoit</option>
+                <option value="Mendon">Mendon</option>
+                <option value="Ogden">Ogden</option>
+                <option value="Penfield">Penfield</option>
+                <option value="Perinton">Perinton</option>
+                <option value="Pittsford">Pittsford</option>
+                <option value="Riga">Riga</option>
+                <option value="Rush">Rush</option>
+                <option value="Sweden">Sweden</option>
+                <option value="Webster">Webster</option>
+                <option value="Wheatland">Wheatland</option>
+              </select>
+            </div>
+            <div class="field"><label>Min Acres</label><input type="number" id="minAcres" value="5" min="1"></div>
+          </div>
+          <div class="row">
+            <div class="field"><label>School</label>
+              <select id="school"><option value="">Any</option><option value="Hilton" selected>Hilton</option><option value="Greece">Greece</option><option value="Spencerport">Spencerport</option><option value="Brockport">Brockport</option></select>
+            </div>
+            <div class="field"><label>Type</label>
+              <select id="propType"><option value="">Any</option><option value="vacant">Vacant Land</option><option value="ag">Agricultural</option><option value="res">Residential</option></select>
+            </div>
+          </div>
+          <div class="row"><button class="btn btn-p" style="flex:1" id="searchBtn" onclick="runSearch()">Search Parcels</button></div>
+          <div class="row">
+            <div class="field"><label>Circle Radius</label>
+              <select id="radiusMi" onchange="updateCircle();renderList();plotMap();">
+                <option value="1">1 mile</option>
+                <option value="2" selected>2 miles</option>
+                <option value="3">3 miles</option>
+                <option value="5">5 miles</option>
+                <option value="0">No limit</option>
+              </select>
+            </div>
+          </div>
+          <div class="legend" style="margin-top:4px;padding:8px 0 0;border-top:1px solid var(--brd)">
+            <div style="font-size:.65rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--td);margin-bottom:4px">Legend</div>
+            <div style="display:flex;flex-wrap:wrap;gap:6px 12px;font-size:.72rem">
+              <span><span class="pscore hot" style="font-size:.68rem">Hot Lead</span> Score 50+, very likely to sell</span>
+              <span><span class="pscore warm" style="font-size:.68rem">Warm</span> Score 25-49, worth contacting</span>
+              <span><span class="pscore cool" style="font-size:.68rem">Cool</span> Score &lt;25, less likely</span>
+            </div>
+            <div style="display:flex;flex-wrap:wrap;gap:4px 10px;font-size:.7rem;color:var(--td);margin-top:5px">
+              <span><span class="ptag vacant">Vacant</span> No building, undeveloped</span>
+              <span><span class="ptag absentee">Absentee</span> Owner lives elsewhere</span>
+              <span><span class="ptag absentee">Out-of-State</span> Owner not in NY</span>
+              <span><span class="ptag sent">Sent</span> You already mailed them</span>
+            </div>
+          </div>
+          <p class="hint" style="margin-top:4px">Only parcels inside the circle are shown. Drag the circle on the map to move it. Set radius to "No limit" for all results.</p>
+        </div>
+        <div class="sbar" id="status"></div>
+        <div class="list-tools" style="padding:6px 12px;border-bottom:1px solid var(--brd);display:none;gap:6px;flex-shrink:0;align-items:center" id="listTools">
+          <input type="text" id="filterText" placeholder="Filter by name or road..." style="flex:1;padding:5px 8px;font-size:.76rem" oninput="renderList()">
+          <select id="sortBy" style="padding:5px 6px;font-size:.74rem;min-width:90px" onchange="resortAndRender()">
+            <option value="score">Sort: Score</option>
+            <option value="acres_desc">Acres ↓</option>
+            <option value="acres_asc">Acres ↑</option>
+            <option value="value_asc">Value ↑</option>
+            <option value="value_desc">Value ↓</option>
+          </select>
+          <label style="font-size:.72rem;color:var(--td);display:flex;align-items:center;gap:4px;white-space:nowrap;cursor:pointer">
+            <input type="checkbox" id="hideSent" onchange="renderList()"> Hide sent
+          </label>
+        </div>
+        <div class="plist" id="plist"></div>
+        <div class="abar" id="abar" style="display:none">
+          <span class="cnt"><strong id="selN">0</strong> selected</span>
+          <button class="btn btn-o btn-sm" onclick="selAll()">All</button>
+          <button class="btn btn-o btn-sm" onclick="selNone()">Clear</button>
+          <button class="btn btn-g btn-sm" onclick="exportCSV()">CSV</button>
+          <button class="btn btn-a btn-sm" onclick="markSent()">Mark Sent</button>
+          <button class="btn btn-p btn-sm" onclick="switchTab('postcard')">Postcards →</button>
+        </div>
+      </div>
+
+      <!-- POSTCARD -->
+      <div class="tab-panel" id="panel-postcard">
+        <div class="pc-config">
+          <h3>Your Info</h3>
+          <div class="row"><div class="field"><label>Name</label><input type="text" id="fromName" placeholder="John & Jane Smith"></div></div>
+          <div class="row"><div class="field"><label>Address</label><input type="text" id="fromAddr" placeholder="123 Main St, Rochester, NY 14616"></div></div>
+          <div class="row"><div class="field"><label>Phone</label><input type="text" id="fromPhone" placeholder="(585) 555-1234"></div></div>
+          <h3>Message</h3>
+          <p class="hint">Variables: <strong>{owner}</strong>, <strong>{acres}</strong>, <strong>{address}</strong>, <strong>{phone}</strong></p>
+          <textarea id="msgTpl">Dear {owner},
+
+My name is [YOUR NAME] and my family is looking to build our home in the area. We love the community and have been searching for the right piece of land.
+
+I noticed you own a beautiful {acres}-acre property on {address}, and I wanted to reach out personally to ask — would you consider selling?
+
+We are serious buyers with financing ready and would make the process as simple as possible. No agents, no pressure — just a friendly conversation.
+
+If you have any interest, I would love to hear from you at {phone}.
+
+Warmly,
+[YOUR NAME]</textarea>
+          <h3>Preview</h3>
+          <div class="preview-card" id="prevCard">
+            <div class="pfrom" id="prevFrom">Your Name · Your Address</div>
+            <div class="pto" id="prevTo">OWNER NAME<br>Mailing Address</div>
+            <div class="pbody" id="prevBody">Fill in your info and select parcels to preview.</div>
+          </div>
+          <div class="row">
+            <button class="btn btn-p" style="flex:1" onclick="updPreview()">Update Preview</button>
+            <button class="btn btn-g" style="flex:1" onclick="printAll()">Print Postcards</button>
+          </div>
+          <p class="hint">Print at 4×6 postcard size, landscape. Each parcel gets its own card with the owner's actual mailing address.</p>
+        </div>
+      </div>
+
+      <!-- TRACKER -->
+      <div class="tab-panel" id="panel-tracker">
+        <div class="controls">
+          <p class="hint">Track postcards you've sent. Click the status badge to cycle through: Pending → Responded → Follow Up → Declined. Data is saved in your browser.</p>
+          <div class="row">
+            <button class="btn btn-o btn-sm" onclick="exportTracker()">Export Tracker CSV</button>
+            <button class="btn btn-o btn-sm" onclick="clearTracker()">Clear All</button>
+          </div>
+        </div>
+        <div class="plist" id="trackerList" style="flex:1;overflow-y:auto"></div>
+      </div>
+    </div>
+
+    <div class="map-area">
+      <div id="map"></div>
+      <div class="overlay-panel" id="overlayPanel">
+        <div class="op-header" onclick="this.parentElement.classList.toggle('collapsed')">
+          Layers <span id="opArrow">▾</span>
+        </div>
+        <div class="op-body">
+          <div class="ov-row"><input type="checkbox" id="ovFlood" onchange="toggleOverlay('flood')"><div class="ov-swatch" style="background:rgba(0,112,255,0.5)"></div><label for="ovFlood">Flood Zones (FEMA)</label></div>
+          <div class="ov-row"><input type="checkbox" id="ovWetlands" onchange="toggleOverlay('wetlands')"><div class="ov-swatch" style="background:rgba(0,200,150,0.5)"></div><label for="ovWetlands">Wetlands (NYS DEC)</label></div>
+          <div class="ov-row"><input type="checkbox" id="ovWetBuf" onchange="toggleOverlay('wetbuf')"><div class="ov-swatch" style="background:rgba(0,200,150,0.25);border:1px dashed rgba(0,200,150,0.6)"></div><label for="ovWetBuf">100ft Buffer (Greece)</label></div>
+          <div class="ov-row"><input type="checkbox" id="ovZoning" onchange="toggleOverlay('zoning')"><div class="ov-swatch" style="background:rgba(167,139,250,0.5)"></div><label for="ovZoning">Zoning (Greece only)</label></div>
+          <div class="ov-row"><input type="checkbox" id="ovContours" onchange="toggleOverlay('contours')"><div class="ov-swatch" style="background:rgba(255,255,255,0.3)"></div><label for="ovContours">Contours (Greece only)</label></div>
+          <div class="ov-row"><input type="checkbox" id="ovLots" checked onchange="toggleLotLines()"><div class="ov-swatch" style="background:transparent;border:1px solid rgba(255,255,255,0.4)"></div><label for="ovLots">Lot Lines (zoom 15+)</label></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="print-only" id="printBox"></div>
+
+<script>
+// ======= STATE =======
+let AP=[], sel=new Set(), mkrs=[], map;
+const API='https://gisservices.its.ny.gov/arcgis/rest/services/NYS_Tax_Parcel_Centroid_Points/FeatureServer/0/query';
+const PMAP={'100':'Agricultural','105':'Farm','110':'Livestock','112':'Dairy','120':'Field Crops','130':'Truck Crops','140':'Orchards','150':'Vineyards','170':'Horse Farm','200':'Residential','210':'Single Family','215':'1-Fam 1ac+','220':'Two Family','240':'Rural Res 10ac+','241':'Rural Res/Ag','250':'Estate','260':'Seasonal','270':'Mobile Home','300':'Vacant Land','310':'Res Vacant','311':'Res Vac 10ac+','312':'Res Vac Improved','314':'Rural Vac <10ac','320':'Rural Vac 10ac+','321':'Aband Ag','322':'Rural Vac 10ac+','330':'Comm Vacant','340':'Ind Vacant','400':'Commercial','500':'Recreation','600':'Community','700':'Industrial','800':'Public Svc','900':'Wild/Forest','910':'Priv Forest','920':'Priv Hunt'};
+function pl(c){return c?PMAP[String(c)]||String(c):'—'}
+function tc(s){return s?s.toLowerCase().replace(/\b\w/g,c=>c.toUpperCase()):''}
+function fmt$(v){return v!=null?'$'+Number(v).toLocaleString():'—'}
+
+// ======= MAP =======
+let searchCircle, placingCircle=false, circleLat=43.29, circleLng=-77.75;
+
+let darkLayer, satLayer, currentBase='dark';
+function initMap(){
+  map=L.map('map',{zoomControl:true}).setView([43.285,-77.74],12);
+  darkLayer=L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{attribution:'© OSM, CARTO',maxZoom:19});
+  satLayer=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{attribution:'© Esri',maxZoom:19});
+  darkLayer.addTo(map);
+
+  // Map style toggle button
+  const ctrl=L.control({position:'topright'});
+  ctrl.onAdd=function(){
+    const div=L.DomUtil.create('div','leaflet-bar');
+    div.innerHTML='<a href="#" id="baseToggle" title="Toggle satellite view" style="display:flex;align-items:center;justify-content:center;width:34px;height:34px;font-size:16px;background:var(--s1);color:var(--t);text-decoration:none">🛰</a>';
+    div.onclick=function(e){e.preventDefault();e.stopPropagation();toggleBase()};
+    return div;
+  };
+  ctrl.addTo(map);
+  createCircle();
+  
+  map.on('click', function(e){
+    if(placingCircle){
+      circleLat=e.latlng.lat;
+      circleLng=e.latlng.lng;
+      createCircle();
+      placingCircle=false;
+      map.getContainer().style.cursor='';
+      document.getElementById('placeBtn').textContent='Click map to reposition';
+      document.getElementById('placeBtn').style.background='';
+      if(AP.length){renderList();plotMap()}
+    }
+  });
+}
+
+function createCircle(){
+  if(searchCircle)map.removeLayer(searchCircle);
+  const mi=parseFloat(document.getElementById('radiusMi')?.value||2);
+  if(mi===0)return;
+  const meters=mi*1609.34;
+  searchCircle=L.circle([circleLat,circleLng],{
+    radius:meters,color:'#4c8dff',fillColor:'#4c8dff',fillOpacity:.04,weight:1.5,dashArray:'6,4',interactive:true
+  }).addTo(map);
+  
+  // Make circle draggable
+  let dragging=false, startLatLng;
+  searchCircle.on('mousedown',function(e){
+    if(placingCircle)return;
+    dragging=true;
+    startLatLng=e.latlng;
+    map.dragging.disable();
+    L.DomEvent.stopPropagation(e);
+  });
+  map.on('mousemove',function(e){
+    if(!dragging)return;
+    const dlat=e.latlng.lat-startLatLng.lat;
+    const dlng=e.latlng.lng-startLatLng.lng;
+    circleLat+=dlat;
+    circleLng+=dlng;
+    searchCircle.setLatLng([circleLat,circleLng]);
+    startLatLng=e.latlng;
+  });
+  map.on('mouseup',function(){
+    if(dragging){dragging=false;map.dragging.enable();if(AP.length){renderList();plotMap()}}
+  });
+}
+
+function toggleBase(){
+  if(currentBase==='dark'){map.removeLayer(darkLayer);satLayer.addTo(map);currentBase='sat'}
+  else{map.removeLayer(satLayer);darkLayer.addTo(map);currentBase='dark'}
+}
+function updateCircle(){createCircle()}
+
+function enablePlaceCircle(){
+  placingCircle=true;
+  map.getContainer().style.cursor='crosshair';
+  const btn=document.getElementById('placeBtn');
+  btn.textContent='Now click on the map...';
+  btn.style.background='var(--acc)';
+  btn.style.color='#fff';
+  btn.style.borderColor='var(--acc)';
+}
+
+// ======= TABS =======
+function switchTab(n){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.tab===n));
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.toggle('active',p.id==='panel-'+n));
+  if(n==='postcard')updPreview();
+  if(n==='tracker')renderTracker();
+}
+
+// ======= STATUS =======
+function ss(t,m){const e=document.getElementById('status');e.className='sbar show '+t;e.innerHTML=m}
+
+// ======= SCORING =======
+function scoreParcel(p){
+  let s=0, tags=[];
+  // Vacant land = high priority
+  const pc=parseInt(p.PROP_CLASS)||0;
+  if(pc>=300&&pc<400){s+=30;tags.push('vacant')}
+  // No year built = likely vacant
+  if(!p.YR_BLT||p.YR_BLT===0){s+=15;tags.push('no-bldg')}
+  // Absentee owner (mailing address differs from parcel address)
+  const mailFull=(p.MAIL_ADDR||'').toUpperCase().trim();
+  const parcelFull=(p.PARCEL_ADDR||'').toUpperCase().trim();
+  if(mailFull&&parcelFull&&!mailFull.includes(parcelFull.split(' ')[0])){s+=20;tags.push('absentee')}
+  // Out of state owner
+  if(p.MAIL_STATE&&p.MAIL_STATE.toUpperCase().trim()!=='NY'){s+=15;tags.push('out-of-state')}
+  // Large acreage bonus
+  if(p.CALC_ACRES>=10)s+=10;
+  if(p.CALC_ACRES>=20)s+=10;
+  // Low total value relative to land (suggests undeveloped)
+  if(p.TOTAL_AV&&p.LAND_AV&&p.TOTAL_AV<=p.LAND_AV*1.1){s+=10;tags.push('land-only')}
+  return {score:Math.min(s,100),tags};
+}
+
+// ======= INSTITUTIONAL FILTER =======
+const INST_KEYWORDS=[
+  // Religious
+  'CHURCH','BAPTIST','METHODIST','LUTHERAN','CATHOLIC','PRESBYTERIAN','EPISCOPAL',
+  'SYNAGOGUE','MOSQUE','TEMPLE','DIOCESE','PARISH','MINISTRY','MINISTRIES','CONGREGATION',
+  // Utilities
+  'ROCHESTER GAS','ELECTRIC CORP','RG&E','RGE','NYSEG','NATIONAL GRID','NIAGARA MOHAWK',
+  'POWER CORP','ENERGY CORP','KEYSPAN','VERIZON','FRONTIER COMM','AT&T','TIME WARNER',
+  // Government (backup for OWNER_TYPE misses)
+  'TOWN OF','COUNTY OF','STATE OF','CITY OF','VILLAGE OF','UNITED STATES',
+  // Schools/institutions
+  'SCHOOL DIST','BOARD OF ED','COLLEGE','UNIVERSITY','SEMINARY',
+  // Emergency services
+  'FIRE DIST','FIRE DEPT','AMBULANCE',
+  // Cemeteries
+  'CEMETERY','MEMORIAL PARK',
+  // Housing/conservation
+  'HOUSING AUTH','LAND AUTHORITY','NATURE CONSERV',
+];
+function isInstitutional(a){
+  const owner=((a.PRIMARY_OWNER||'')+' '+(a.ADD_OWNER||'')).toUpperCase();
+  return INST_KEYWORDS.some(k=>owner.includes(k));
+}
+
+// ======= SEARCH =======
+async function runSearch(){
+  const muniSel=document.getElementById('muni');
+  const munis=[...muniSel.selectedOptions].map(o=>o.value).filter(Boolean);
+  const minA=parseFloat(document.getElementById('minAcres').value)||5;
+  const sch=document.getElementById('school').value;
+  const pt=document.getElementById('propType').value;
+
+  ss('ld','<span class="spin"></span> Querying NYS parcel database...');
+  let w=`COUNTY_NAME='Monroe' AND CALC_ACRES>=${minA}`;
+  if(munis.length===1)w+=` AND MUNI_NAME LIKE '%${munis[0]}%'`;
+  else if(munis.length>1)w+=` AND (${munis.map(m=>`MUNI_NAME LIKE '%${m}%'`).join(' OR ')})`;
+  if(sch)w+=` AND SCHOOL_NAME LIKE '%${sch}%'`;
+  w+=` AND (OWNER_TYPE IS NULL OR OWNER_TYPE NOT IN ('1','2','3','5','6','7'))`;
+  if(pt==='vacant')w+=' AND PROP_CLASS>=300 AND PROP_CLASS<400';
+  else if(pt==='ag')w+=' AND PROP_CLASS>=100 AND PROP_CLASS<200';
+  else if(pt==='res')w+=' AND PROP_CLASS>=200 AND PROP_CLASS<300';
+  else w+=' AND PROP_CLASS<400'; // exclude commercial(400+), community(600+), industrial(700+), public svc(800+)
+
+  const flds='PRIMARY_OWNER,ADD_OWNER,PARCEL_ADDR,CALC_ACRES,SCHOOL_NAME,PROP_CLASS,LAND_AV,TOTAL_AV,FULL_MARKET_VAL,PRINT_KEY,MUNI_NAME,SBL,YR_BLT,MAIL_ADDR,PO_BOX,MAIL_CITY,MAIL_STATE,MAIL_ZIP,ADD_MAIL_ADDR,ADD_MAIL_CITY,ADD_MAIL_STATE,ADD_MAIL_ZIP,SEWER_DESC,WATER_DESC,UTILITIES_DESC,AG_DIST_NAME,FRONT,DEPTH,OWNER_TYPE,BOOK,PAGE,LOC_ZIP';
+
+  AP=[];sel.clear();let off=0;
+  try{
+    while(true){
+      const p=new URLSearchParams({where:w,outFields:flds,orderByFields:'CALC_ACRES DESC',returnGeometry:'true',outSR:'4326',resultOffset:off,resultRecordCount:1000,f:'json'});
+      const r=await fetch(`${API}?${p}`);const d=await r.json();
+      if(d.error)throw new Error(d.error.message);
+      const fs=d.features||[];
+      fs.forEach(f=>{
+        if(isInstitutional(f.attributes))return;
+        f.attributes._lat=f.geometry?.y;f.attributes._lng=f.geometry?.x;
+        const sc=scoreParcel(f.attributes);f.attributes._score=sc.score;f.attributes._tags=sc.tags;
+        AP.push(f.attributes)});
+      ss('ld',`<span class="spin"></span> ${AP.length} parcels...`);
+      if(fs.length<1000||!d.exceededTransferLimit)break;
+      off+=1000;
+    }
+    // Sort by score desc, then acres desc
+    AP.sort((a,b)=>b._score-a._score||b.CALC_ACRES-a.CALC_ACRES);
+    if(!AP.length){ss('er','No parcels found.');return}
+    ss('ok',`✓ ${AP.length} parcels with mailing addresses · Sorted by likelihood to sell`);
+    renderList();plotMap();
+    document.getElementById('abar').style.display='flex';
+    document.getElementById('listTools').style.display='flex';
+  }catch(e){ss('er','Error: '+e.message)}
+}
+
+// ======= DISTANCE =======
+function haversine(lat1,lng1,lat2,lng2){
+  const R=3958.8; // miles
+  const dLat=(lat2-lat1)*Math.PI/180;
+  const dLng=(lng2-lng1)*Math.PI/180;
+  const a=Math.sin(dLat/2)**2+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)**2;
+  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+
+function isInCircle(p){
+  const rMi=parseFloat(document.getElementById('radiusMi')?.value||0);
+  if(rMi===0)return true; // no limit
+  if(!p._lat||!p._lng)return false;
+  return haversine(circleLat,circleLng,p._lat,p._lng)<=rMi;
+}
+
+// ======= LIST =======
+let filteredIdx=[]; // maps visible row index -> AP index
+
+function renderList(){
+  const l=document.getElementById('plist');l.innerHTML='';
+  const tracker=getTracker();
+  const filterStr=(document.getElementById('filterText')?.value||'').toLowerCase();
+  const hideSent=document.getElementById('hideSent')?.checked||false;
+
+  filteredIdx=[];
+  AP.forEach((p,i)=>{
+    // Filter: circle
+    if(!isInCircle(p))return;
+    // Filter: hide sent
+    if(hideSent){
+      const sentKey=p.PRINT_KEY||p.SBL||'';
+      if(tracker[sentKey])return;
+    }
+    // Filter: text search
+    if(filterStr){
+      const haystack=`${p.PRIMARY_OWNER||''} ${p.ADD_OWNER||''} ${p.PARCEL_ADDR||''}`.toLowerCase();
+      if(!haystack.includes(filterStr))return;
+    }
+    filteredIdx.push(i);
+  });
+
+  filteredIdx.forEach(i=>{
+    const p=AP[i];
+    const d=document.createElement('div');
+    d.className='pitem'+(sel.has(i)?' sel':'');
+    d.onclick=(e)=>{if(e.detail===2){flyToParcel(i)}else{togSel(i)}};
+    const mailAddr=buildMailAddr(p);
+    const scLbl=p._score>=50?'hot':p._score>=25?'warm':'cool';
+    const scTxt=p._score>=50?'Hot Lead':p._score>=25?'Warm':'Cool';
+    const sentKey=p.PRINT_KEY||p.SBL||'';
+    const wasSent=tracker[sentKey];
+    d.innerHTML=`
+      <div class="pchk"></div>
+      <div class="pflyto" onclick="event.stopPropagation();flyToParcel(${i})" title="Show on map">⊕</div>
+      <div class="pinfo">
+        <div class="powner">${tc(p.PRIMARY_OWNER||'Unknown')}${p.ADD_OWNER?' & '+tc(p.ADD_OWNER):''}</div>
+        <div class="paddr">${tc(p.PARCEL_ADDR||'No address listed')}, ${p.LOC_ZIP||''}</div>
+        <div class="pmail">✉ ${mailAddr||'No mailing address'}</div>
+        <div class="pmeta">
+          <span class="pacres">${p.CALC_ACRES?.toFixed(1)||'?'} ac</span>
+          <span class="pscore ${scLbl}">${scTxt}</span>
+          <span>${pl(p.PROP_CLASS)}</span>
+          <span>${fmt$(p.FULL_MARKET_VAL||p.TOTAL_AV)}</span>
+          ${p._tags.includes('vacant')?'<span class="ptag vacant">Vacant</span>':''}
+          ${p._tags.includes('absentee')?'<span class="ptag absentee">Absentee</span>':''}
+          ${p._tags.includes('out-of-state')?'<span class="ptag absentee">Out-of-State</span>':''}
+          ${wasSent?'<span class="ptag sent">Sent '+wasSent.date+'</span>':''}
+        </div>
+      </div>`;
+    l.appendChild(d);
+  });
+
+  // Update count in status bar
+  if(AP.length){
+    const hidden=AP.length-filteredIdx.length;
+    const extra=hidden>0?` · ${hidden} hidden`:'';
+    ss('ok',`✓ ${filteredIdx.length} parcels shown${extra} · Sorted by ${document.getElementById('sortBy')?.value||'score'}`);
+  }
+}
+
+function resortAndRender(){
+  const sortBy=document.getElementById('sortBy').value;
+  switch(sortBy){
+    case'score':AP.sort((a,b)=>b._score-a._score||b.CALC_ACRES-a.CALC_ACRES);break;
+    case'acres_desc':AP.sort((a,b)=>b.CALC_ACRES-a.CALC_ACRES);break;
+    case'acres_asc':AP.sort((a,b)=>a.CALC_ACRES-b.CALC_ACRES);break;
+    case'value_asc':AP.sort((a,b)=>(a.FULL_MARKET_VAL||a.TOTAL_AV||0)-(b.FULL_MARKET_VAL||b.TOTAL_AV||0));break;
+    case'value_desc':AP.sort((a,b)=>(b.FULL_MARKET_VAL||b.TOTAL_AV||0)-(a.FULL_MARKET_VAL||a.TOTAL_AV||0));break;
+  }
+  sel.clear();
+  renderList();plotMap();
+}
+
+function buildMailAddr(p){
+  const parts=[];
+  if(p.MAIL_ADDR)parts.push(tc(p.MAIL_ADDR));
+  else if(p.PO_BOX)parts.push('PO Box '+p.PO_BOX);
+  if(p.MAIL_CITY)parts.push(tc(p.MAIL_CITY));
+  if(p.MAIL_STATE)parts.push(p.MAIL_STATE.toUpperCase());
+  if(p.MAIL_ZIP)parts.push(p.MAIL_ZIP);
+  return parts.join(', ');
+}
+
+function togSel(i){sel.has(i)?sel.delete(i):sel.add(i);updSel()}
+function selAll(){AP.forEach((_,i)=>sel.add(i));updSel()}
+function selNone(){sel.clear();updSel()}
+function updSel(){
+  document.getElementById('selN').textContent=sel.size;
+  document.querySelectorAll('.pitem').forEach((e,i)=>e.classList.toggle('sel',sel.has(i)));
+  mkrs.forEach((m,i)=>{
+    const col=getMarkerColor(AP[i]);
+    if(sel.has(i)){m.setStyle({color:'#fff',fillColor:col,fillOpacity:1,weight:3});m.setRadius(9)}
+    else{m.setStyle({color:col,fillColor:col,fillOpacity:.7,weight:1});m.setRadius(6)}
+  });
+}
+
+function getMarkerColor(p){
+  if(p._score>=50)return'#ef4444';
+  if(p._score>=25)return'#f59e0b';
+  return'#4c8dff';
+}
+
+// ======= FLY TO PARCEL =======
+let highlightLayer=null;
+function flyToParcel(i){
+  const p=AP[i];
+  if(!p._lat||!p._lng)return;
+  // Select it
+  if(!sel.has(i)){sel.add(i);updSel()}
+  // Fly to location
+  map.flyTo([p._lat,p._lng],16,{duration:0.8});
+  // Open popup
+  if(mkrs[i])mkrs[i].openPopup();
+  // Fetch and highlight parcel boundary
+  fetchParcelBoundary(p);
+  // Scroll list item into view
+  const items=document.querySelectorAll('.pitem');
+  if(items[i])items[i].scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+// ======= PARCEL BOUNDARIES =======
+const PARCEL_POLY_API='https://maps.monroecounty.gov/server/rest/services/Hosted/Parcels_Public/FeatureServer/0/query';
+
+async function fetchParcelBoundary(p){
+  // Remove old highlight
+  if(highlightLayer){map.removeLayer(highlightLayer);highlightLayer=null}
+  const pk=p.PRINT_KEY||p.SBL||'';
+  if(!pk)return;
+  try{
+    const params=new URLSearchParams({
+      where:`printkey='${pk}'`,
+      outFields:'printkey,acres,parceladdress',
+      returnGeometry:'true',
+      outSR:'4326',
+      f:'json'
+    });
+    const r=await fetch(`${PARCEL_POLY_API}?${params}`);
+    const d=await r.json();
+    if(d.features&&d.features.length>0){
+      const rings=d.features[0].geometry.rings;
+      // Convert ArcGIS rings to Leaflet polygon coords
+      const latlngs=rings.map(ring=>ring.map(c=>[c[1],c[0]]));
+      highlightLayer=L.polygon(latlngs,{
+        color:'#4c8dff',fillColor:'#4c8dff',fillOpacity:.15,weight:2.5,dashArray:'5,5'
+      }).addTo(map);
+    }
+  }catch(e){console.log('Boundary fetch failed:',e)}
+}
+
+// Load parcel boundaries in view when zoomed in
+let boundaryLayer=L.layerGroup();
+let lastBoundsLoad='';
+let boundaryVisible=true;
+
+function initBoundaryLayer(){
+  boundaryLayer.addTo(map);
+  map.on('moveend',()=>{if(map.getZoom()>=15&&boundaryVisible)loadVisibleBoundaries()});
+  map.on('zoomend',()=>{
+    if(map.getZoom()<15){boundaryLayer.clearLayers();lastBoundsLoad=''}
+  });
+}
+
+async function loadVisibleBoundaries(){
+  const b=map.getBounds();
+  const key=`${b.getSouth().toFixed(3)},${b.getWest().toFixed(3)},${b.getNorth().toFixed(3)},${b.getEast().toFixed(3)},${map.getZoom()}`;
+  if(key===lastBoundsLoad)return;
+  lastBoundsLoad=key;
+  try{
+    const env=JSON.stringify({
+      xmin:b.getWest(),ymin:b.getSouth(),xmax:b.getEast(),ymax:b.getNorth(),
+      spatialReference:{wkid:4326}
+    });
+    const params=new URLSearchParams({
+      where:'1=1',
+      geometry:env,
+      geometryType:'esriGeometryEnvelope',
+      inSR:'4326',
+      spatialRel:'esriSpatialRelIntersects',
+      outFields:'printkey,acres',
+      returnGeometry:'true',
+      outSR:'4326',
+      resultRecordCount:'500',
+      f:'json'
+    });
+    const r=await fetch(`${PARCEL_POLY_API}?${params}`);
+    const d=await r.json();
+    boundaryLayer.clearLayers();
+    if(d.features){
+      d.features.forEach(f=>{
+        if(!f.geometry||!f.geometry.rings)return;
+        const latlngs=f.geometry.rings.map(ring=>ring.map(c=>[c[1],c[0]]));
+        const poly=L.polygon(latlngs,{
+          color:'rgba(255,255,255,0.3)',fillColor:'transparent',fillOpacity:0,weight:1,interactive:false
+        });
+        boundaryLayer.addLayer(poly);
+      });
+    }
+  }catch(e){console.log('Boundary load failed:',e)}
+}
+
+// ======= MAP =======
+function plotMap(){
+  mkrs.forEach(m=>map.removeLayer(m));mkrs=[];
+  const bounds=[];
+  AP.forEach((p,i)=>{
+    if(!p._lat||!p._lng)return;
+    if(!isInCircle(p))return;
+    const col=getMarkerColor(p);
+    const m=L.circleMarker([p._lat,p._lng],{radius:6,color:col,fillColor:col,fillOpacity:.7,weight:1}).addTo(map);
+    const mailAddr=buildMailAddr(p);
+    const tags=[];
+    if(p._tags.includes('vacant'))tags.push('<span style="color:#34d399">Vacant</span>');
+    if(p._tags.includes('absentee'))tags.push('<span style="color:#a78bfa">Absentee Owner</span>');
+    if(p._tags.includes('out-of-state'))tags.push('<span style="color:#a78bfa">Out-of-State</span>');
+    if(p._tags.includes('land-only'))tags.push('<span style="color:#f59e0b">Land Value Only</span>');
+    m.bindPopup(`<div style="min-width:220px">
+      <strong style="font-size:.88rem">${tc(p.PRIMARY_OWNER||'Unknown')}</strong>
+      ${p.ADD_OWNER?'<br>'+tc(p.ADD_OWNER):''}
+      <br><span style="color:#888">${tc(p.PARCEL_ADDR||'')}</span>
+      <br><br><strong style="color:#34d399">${p.CALC_ACRES?.toFixed(1)} acres</strong> · ${pl(p.PROP_CLASS)}
+      <br>Market Value: ${fmt$(p.FULL_MARKET_VAL||p.TOTAL_AV)}
+      ${p.YR_BLT?'<br>Year Built: '+p.YR_BLT:'<br><em style="color:#34d399">No building on record</em>'}
+      <br>Water: ${p.WATER_DESC||'Unknown'} · Sewer: ${p.SEWER_DESC||'Unknown'}
+      ${p.AG_DIST_NAME?'<br>Ag District: '+p.AG_DIST_NAME:''}
+      <br><br><strong>Mailing Address:</strong><br>${mailAddr||'Not available'}
+      ${tags.length?'<br><br>'+tags.join(' · '):''}
+      <br><br><strong>Score: ${p._score}/100</strong>
+    </div>`);
+    m.on('click',()=>{if(!sel.has(i)){sel.add(i);updSel()}});
+    mkrs.push(m);bounds.push([p._lat,p._lng]);
+  });
+  if(bounds.length)map.fitBounds(bounds,{padding:[30,30]});
+}
+
+// ======= CSV =======
+function exportCSV(){
+  const ids=sel.size?[...sel]:AP.map((_,i)=>i);
+  const rows=ids.map(i=>AP[i]);
+  const h=['Owner','Additional Owner','Parcel Address','Zip','Acres','Municipality','School','Property Class','Land Value','Total Value','Market Value','Year Built','Mail Address','Mail City','Mail State','Mail Zip','Water','Sewer','Utilities','Ag District','Score','Tags','Parcel ID'];
+  const csv=[h.join(','),...rows.map(r=>[
+    `"${(r.PRIMARY_OWNER||'').replace(/"/g,'""')}"`,`"${(r.ADD_OWNER||'').replace(/"/g,'""')}"`,
+    `"${(r.PARCEL_ADDR||'').replace(/"/g,'""')}"`,`"${r.LOC_ZIP||''}"`,
+    r.CALC_ACRES?.toFixed(2)||'',`"${r.MUNI_NAME||''}"`,`"${r.SCHOOL_NAME||''}"`,
+    `"${pl(r.PROP_CLASS)}"`,r.LAND_AV||'',r.TOTAL_AV||'',r.FULL_MARKET_VAL||'',r.YR_BLT||'',
+    `"${(r.MAIL_ADDR||r.PO_BOX||'').replace(/"/g,'""')}"`,`"${r.MAIL_CITY||''}"`,`"${r.MAIL_STATE||''}"`,`"${r.MAIL_ZIP||''}"`,
+    `"${r.WATER_DESC||''}"`,`"${r.SEWER_DESC||''}"`,`"${r.UTILITIES_DESC||''}"`,`"${r.AG_DIST_NAME||''}"`,
+    r._score,`"${(r._tags||[]).join(', ')}"`,`"${r.PRINT_KEY||r.SBL||''}"`
+  ].join(','))].join('\n');
+  dl(csv,'land_parcels_'+new Date().toISOString().slice(0,10)+'.csv','text/csv');
+}
+
+function dl(content,name,type){
+  const b=new Blob([content],{type});const a=document.createElement('a');
+  a.href=URL.createObjectURL(b);a.download=name;a.click();
+}
+
+// ======= PERSIST USER INFO =======
+function saveUserInfo(){
+  const info={
+    name:document.getElementById('fromName').value,
+    addr:document.getElementById('fromAddr').value,
+    phone:document.getElementById('fromPhone').value,
+    msg:document.getElementById('msgTpl').value
+  };
+  localStorage.setItem('lf_userinfo',JSON.stringify(info));
+}
+function loadUserInfo(){
+  try{
+    const info=JSON.parse(localStorage.getItem('lf_userinfo')||'{}');
+    if(info.name)document.getElementById('fromName').value=info.name;
+    if(info.addr)document.getElementById('fromAddr').value=info.addr;
+    if(info.phone)document.getElementById('fromPhone').value=info.phone;
+    if(info.msg)document.getElementById('msgTpl').value=info.msg;
+  }catch(e){}
+}
+// Auto-save on input
+['fromName','fromAddr','fromPhone','msgTpl'].forEach(id=>{
+  document.getElementById(id)?.addEventListener('input',saveUserInfo);
+});
+
+// ======= POSTCARDS =======
+function fillTpl(tpl,p){
+  const ph=document.getElementById('fromPhone').value||'[YOUR PHONE]';
+  return tpl.replace(/\{owner\}/g,tc(p.PRIMARY_OWNER||'Homeowner'))
+    .replace(/\{acres\}/g,p.CALC_ACRES?.toFixed(1)||'?')
+    .replace(/\{address\}/g,tc(p.PARCEL_ADDR||'your property'))
+    .replace(/\{phone\}/g,ph);
+}
+
+function updPreview(){
+  const fn=document.getElementById('fromName').value||'Your Name';
+  const fa=document.getElementById('fromAddr').value||'Your Address';
+  const tpl=document.getElementById('msgTpl').value;
+  const sample=sel.size?AP[[...sel][0]]:(AP[0]||{PRIMARY_OWNER:'SAMPLE OWNER',PARCEL_ADDR:'123 Sample Rd',CALC_ACRES:7.5,MAIL_ADDR:'456 Mail St',MAIL_CITY:'Rochester',MAIL_STATE:'NY',MAIL_ZIP:'14616'});
+  document.getElementById('prevFrom').textContent=`${fn} · ${fa}`;
+  const mailAddr=buildMailAddr(sample);
+  document.getElementById('prevTo').innerHTML=`${tc(sample.PRIMARY_OWNER||'Owner')}<br>${mailAddr}`;
+  document.getElementById('prevBody').textContent=fillTpl(tpl,sample);
+}
+
+function printAll(){
+  const fn=document.getElementById('fromName').value||'';
+  const fa=document.getElementById('fromAddr').value||'';
+  const tpl=document.getElementById('msgTpl').value;
+  const ids=sel.size?[...sel]:AP.map((_,i)=>i);
+  if(!ids.length){alert('No parcels selected.');return}
+  const box=document.getElementById('printBox');box.innerHTML='';
+  ids.forEach(i=>{
+    const p=AP[i];const d=document.createElement('div');d.className='print-pc';
+    const mailAddr=buildMailAddr(p);
+    d.innerHTML=`<div class="pf">${fn}${fa?' · '+fa:''}</div>
+      <div class="pt">${tc(p.PRIMARY_OWNER||'Current Owner')}${p.ADD_OWNER?' & '+tc(p.ADD_OWNER):''}<br>${mailAddr}</div>
+      <div class="pb">${fillTpl(tpl,p)}</div>`;
+    box.appendChild(d);
+  });
+  setTimeout(()=>window.print(),200);
+}
+
+// ======= TRACKER =======
+function getTracker(){try{return JSON.parse(localStorage.getItem('lf_tracker')||'{}')}catch{return{}}}
+function saveTracker(t){localStorage.setItem('lf_tracker',JSON.stringify(t))}
+
+function markSent(){
+  const t=getTracker();const ids=sel.size?[...sel]:[];
+  if(!ids.length){alert('Select parcels first.');return}
+  const today=new Date().toISOString().slice(0,10);
+  ids.forEach(i=>{
+    const p=AP[i];const k=p.PRINT_KEY||p.SBL||'';
+    if(k)t[k]={owner:p.PRIMARY_OWNER||'',addr:buildMailAddr(p),parcelAddr:p.PARCEL_ADDR||'',acres:p.CALC_ACRES,date:today,status:'pending'};
+  });
+  saveTracker(t);
+  renderList();
+  alert(`${ids.length} parcels marked as sent.`);
+  switchTab('tracker');
+}
+
+function renderTracker(){
+  const t=getTracker();const list=document.getElementById('trackerList');list.innerHTML='';
+  const entries=Object.entries(t).sort((a,b)=>b[1].date.localeCompare(a[1].date));
+  if(!entries.length){list.innerHTML='<div style="padding:20px;color:var(--td);font-size:.82rem;text-align:center">No postcards tracked yet. Search for parcels, select them, and click "Mark Sent".</div>';return}
+  entries.forEach(([k,v])=>{
+    const d=document.createElement('div');d.className='tracker-item';
+    const stCls=v.status||'pending';
+    d.innerHTML=`<div class="tleft">
+        <div class="towner">${tc(v.owner||'Unknown')}</div>
+        <div class="tdate">${tc(v.parcelAddr||'')} · ${v.acres?.toFixed(1)||'?'} ac · Sent ${v.date}</div>
+      </div>
+      <div class="tstatus ${stCls}" onclick="cycleStatus('${k}')">${stCls.charAt(0).toUpperCase()+stCls.slice(1)}</div>`;
+    list.appendChild(d);
+  });
+}
+
+function cycleStatus(k){
+  const t=getTracker();
+  const order=['pending','responded','followup','declined'];
+  const cur=t[k]?.status||'pending';
+  const next=order[(order.indexOf(cur)+1)%order.length];
+  t[k].status=next;saveTracker(t);renderTracker();
+}
+
+function exportTracker(){
+  const t=getTracker();const entries=Object.entries(t);
+  if(!entries.length){alert('Nothing to export.');return}
+  const h=['Parcel ID','Owner','Mailing Address','Parcel Address','Acres','Date Sent','Status'];
+  const csv=[h.join(','),...entries.map(([k,v])=>[
+    `"${k}"`,`"${v.owner||''}"`,`"${v.addr||''}"`,`"${v.parcelAddr||''}"`,v.acres||'',v.date||'',v.status||''
+  ].join(','))].join('\n');
+  dl(csv,'postcard_tracker_'+new Date().toISOString().slice(0,10)+'.csv','text/csv');
+}
+
+function clearTracker(){if(confirm('Clear all tracking data?')){localStorage.removeItem('lf_tracker');renderTracker()}}
+
+// ======= GIS OVERLAYS =======
+const GREECE_MS='https://gis.greeceny.gov/server/rest/services/GRIMS/GRIMS/MapServer';
+const FEMA_MS='https://hazards.fema.gov/arcgis/rest/services/public/NFHL/MapServer';
+const DEC_WETLANDS_MS='https://gisservices.dec.ny.gov/arcgis/rest/services/erm/informational_freshwater_wetlands/MapServer';
+const overlays={};
+
+function initOverlays(){
+  // FEMA Flood Zones — federal, covers everywhere
+  overlays.flood=L.esri.dynamicMapLayer({
+    url:FEMA_MS,
+    layers:[28],
+    opacity:0.45
+  });
+
+  // NYS DEC Freshwater Wetlands — state, covers all NY
+  overlays.wetlands=L.esri.dynamicMapLayer({
+    url:DEC_WETLANDS_MS,
+    layers:[0],
+    opacity:0.4
+  });
+
+  // Wetland 100ft Buffer — Greece GIS only (layer 85)
+  overlays.wetbuf=L.esri.dynamicMapLayer({
+    url:GREECE_MS,
+    layers:[85],
+    opacity:0.3
+  });
+
+  // Zoning 2020 — Greece GIS only (layer 73)
+  overlays.zoning=L.esri.dynamicMapLayer({
+    url:GREECE_MS,
+    layers:[73],
+    opacity:0.35
+  });
+
+  // Identify zoning on click
+  map.on('click',function(e){
+    if(!map.hasLayer(overlays.zoning))return;
+    L.esri.identifyFeatures({url:GREECE_MS})
+      .layers('visible:73')
+      .on(map)
+      .at(e.latlng)
+      .run(function(err,fc){
+        if(err||!fc||!fc.features||!fc.features.length)return;
+        const props=fc.features[0].properties;
+        const zone=props.SP_ZONE||props.ZONE||props.ZONING||Object.values(props).find(v=>typeof v==='string'&&v.length<20)||'Unknown';
+        L.popup().setLatLng(e.latlng).setContent(`<div style="font-family:'DM Sans',sans-serif"><strong>Zoning:</strong> ${zone}</div>`).openOn(map);
+      });
+  });
+
+  // 1ft Contours — Greece GIS only (layer 74)
+  overlays.contours=L.esri.dynamicMapLayer({
+    url:GREECE_MS,
+    layers:[74],
+    opacity:0.4
+  });
+}
+
+const ovIdMap={flood:'ovFlood',wetlands:'ovWetlands',wetbuf:'ovWetBuf',zoning:'ovZoning',contours:'ovContours'};
+function toggleOverlay(name){
+  const cb=document.getElementById(ovIdMap[name]);
+  if(!overlays[name])return;
+  if(cb&&cb.checked){
+    overlays[name].addTo(map);
+  }else{
+    map.removeLayer(overlays[name]);
+  }
+}
+
+function toggleLotLines(){
+  const cb=document.getElementById('ovLots');
+  boundaryVisible=cb?cb.checked:!boundaryVisible;
+  if(boundaryVisible){
+    if(map.getZoom()>=15)loadVisibleBoundaries();
+  }else{
+    boundaryLayer.clearLayers();lastBoundsLoad='';
+  }
+}
+
+// ======= INIT =======
+initMap();
+initBoundaryLayer();
+initOverlays();
+loadUserInfo();
+</script>
+</body>
+</html>
