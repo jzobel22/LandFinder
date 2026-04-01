@@ -138,32 +138,40 @@ textarea:focus{border-color:var(--acc);box-shadow:0 0 0 2px var(--acc2)}
 @media(max-width:800px){
   .topbar h1{font-size:.85rem}
   .topbar .badge{display:none}
-  .main{flex-direction:column-reverse;height:calc(100vh - 42px)}
-  .sidebar{width:100%;min-width:unset;border-right:none;border-top:1px solid var(--brd);flex:1;overflow:hidden}
-  .map-area{height:40vh;min-height:200px;flex-shrink:0}
-  .controls{padding:8px 10px;gap:6px}
+  .topbar span:last-child{display:none}
+  .main{flex-direction:column-reverse;height:calc(100vh - 42px - 40px)}
+  .sidebar{width:100%;min-width:unset;border-right:none;border-top:1px solid var(--brd);flex:1;overflow:hidden;display:flex;flex-direction:column}
+  .map-area{height:40vh;min-height:180px;flex-shrink:0}
+  .controls{padding:8px 10px;gap:6px;overflow-y:auto;max-height:none}
   .row{flex-wrap:wrap}
+  .field{min-width:0}
   .field label{font-size:.62rem}
-  select,input[type="number"],input[type="text"]{font-size:.8rem;padding:8px}
+  select,input[type="number"],input[type="text"]{font-size:16px;padding:8px}
   select[multiple]{min-height:70px!important}
-  .btn{padding:10px 14px;font-size:.82rem}
-  .pitem{padding:8px 10px}
-  .pflyto{width:32px;height:32px;font-size:18px;opacity:.8}
-  .pchk{width:20px;height:20px}
+  .btn{padding:10px 14px;font-size:.82rem;-webkit-tap-highlight-color:transparent}
+  .pitem{padding:10px;-webkit-tap-highlight-color:transparent}
+  .pflyto{width:36px;height:36px;font-size:20px;opacity:1}
+  .pchk{width:22px;height:22px}
   .powner{font-size:.82rem}
   .pmeta{gap:5px}
-  .abar{flex-wrap:wrap;gap:5px;padding:6px 10px}
+  .plist{-webkit-overflow-scrolling:touch}
+  .abar{flex-wrap:wrap;gap:5px;padding:6px 10px 50px}
   .abar .btn{flex:1;min-width:60px}
-  .overlay-panel{top:auto;bottom:10px;left:10px;max-width:200px}
-  .overlay-panel .op-body{max-height:200px;overflow-y:auto}
+  .overlay-panel{top:auto;bottom:50px;left:10px;max-width:180px;font-size:.7rem}
+  .overlay-panel.collapsed{bottom:10px}
+  .overlay-panel .op-body{max-height:180px;overflow-y:auto}
+  .ov-row{padding:5px 0}
+  .ov-row input{width:18px;height:18px}
   .legend{font-size:.65rem!important}
   .legend>div{gap:4px 8px!important}
-  .list-tools{flex-wrap:wrap}
-  #filterText{min-width:120px}
-  .tabs .tab{padding:10px 4px;font-size:.7rem}
-  .abar{padding-bottom:46px}
-  .app{height:calc(100vh - 40px)}
+  .list-tools{flex-wrap:wrap;gap:4px!important}
+  #filterText{min-width:100%;order:-1}
+  .tabs .tab{padding:10px 4px;font-size:.7rem;-webkit-tap-highlight-color:transparent}
   .mob-view-toggle{display:flex!important}
+  .mob-hint{display:block!important}
+  .pc-config{padding:10px}
+  textarea{min-height:80px}
+  .preview-card{padding:16px;font-size:.78rem}
 }
 .mob-view-toggle{display:none;position:fixed;bottom:0;left:0;right:0;z-index:1001;background:var(--s1);border-top:1px solid var(--brd)}
 .mob-view-toggle button{flex:1;padding:10px;font-family:'DM Sans',sans-serif;font-size:.78rem;font-weight:600;background:none;border:none;color:var(--td);cursor:pointer}
@@ -252,7 +260,7 @@ textarea:focus{border-color:var(--acc);box-shadow:0 0 0 2px var(--acc2)}
               <span><span class="ptag sent">Sent</span> You already mailed them</span>
             </div>
           </div>
-          <p class="hint" style="margin-top:4px">Only parcels inside the circle are shown. Set radius to "No limit" for all results.</p>
+          <p class="hint" style="margin-top:4px">Only parcels inside the circle are shown. Drag the circle to move it (desktop) or long-press the map (mobile). Set to "No limit" for all results.</p>
           </div><!-- end ctrlBody -->
         </div>
         <div class="sbar" id="status"></div>
@@ -389,10 +397,25 @@ function initMap(){
       createCircle();
       placingCircle=false;
       map.getContainer().style.cursor='';
-      document.getElementById('placeBtn').textContent='Click map to reposition';
-      document.getElementById('placeBtn').style.background='';
       if(AP.length){renderList();plotMap()}
     }
+  });
+
+  // Mobile: long-press to reposition circle
+  let longPressTimer;
+  map.on('mousedown touchstart',function(e){
+    if(circleLocked)return;
+    longPressTimer=setTimeout(function(){
+      const latlng=e.latlng||e.containerPoint&&map.containerPointToLatLng(e.containerPoint);
+      if(!latlng)return;
+      circleLat=latlng.lat;
+      circleLng=latlng.lng;
+      createCircle();
+      if(AP.length){renderList();plotMap()}
+    },600);
+  });
+  map.on('mouseup touchend mousemove touchmove',function(){
+    clearTimeout(longPressTimer);
   });
 }
 
@@ -401,31 +424,34 @@ function createCircle(){
   const mi=parseFloat(document.getElementById('radiusMi')?.value||2);
   if(mi===0)return;
   const meters=mi*1609.34;
+  const isMobile=window.innerWidth<=800;
   searchCircle=L.circle([circleLat,circleLng],{
-    radius:meters,color:'#4c8dff',fillColor:'#4c8dff',fillOpacity:.04,weight:1.5,dashArray:'6,4',interactive:true
+    radius:meters,color:'#4c8dff',fillColor:'#4c8dff',fillOpacity:.04,weight:1.5,dashArray:'6,4',interactive:!isMobile
   }).addTo(map);
-  
-  // Make circle draggable
-  let dragging=false, startLatLng;
-  searchCircle.on('mousedown',function(e){
-    if(placingCircle||circleLocked)return;
-    dragging=true;
-    startLatLng=e.latlng;
-    map.dragging.disable();
-    L.DomEvent.stopPropagation(e);
-  });
-  map.on('mousemove',function(e){
-    if(!dragging)return;
-    const dlat=e.latlng.lat-startLatLng.lat;
-    const dlng=e.latlng.lng-startLatLng.lng;
-    circleLat+=dlat;
-    circleLng+=dlng;
-    searchCircle.setLatLng([circleLat,circleLng]);
-    startLatLng=e.latlng;
-  });
-  map.on('mouseup',function(){
-    if(dragging){dragging=false;map.dragging.enable();if(AP.length){renderList();plotMap()}}
-  });
+
+  if(!isMobile){
+    // Desktop: make circle draggable
+    let dragging=false, startLatLng;
+    searchCircle.on('mousedown',function(e){
+      if(placingCircle||circleLocked)return;
+      dragging=true;
+      startLatLng=e.latlng;
+      map.dragging.disable();
+      L.DomEvent.stopPropagation(e);
+    });
+    map.on('mousemove',function(e){
+      if(!dragging)return;
+      const dlat=e.latlng.lat-startLatLng.lat;
+      const dlng=e.latlng.lng-startLatLng.lng;
+      circleLat+=dlat;
+      circleLng+=dlng;
+      searchCircle.setLatLng([circleLat,circleLng]);
+      startLatLng=e.latlng;
+    });
+    map.on('mouseup',function(){
+      if(dragging){dragging=false;map.dragging.enable();if(AP.length){renderList();plotMap()}}
+    });
+  }
 }
 
 function toggleBase(){
