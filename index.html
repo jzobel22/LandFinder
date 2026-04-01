@@ -733,10 +733,16 @@ function selAll(){AP.forEach((_,i)=>sel.add(i));updSel()}
 function selNone(){sel.clear();updSel()}
 function updSel(){
   document.getElementById('selN').textContent=sel.size;
-  document.querySelectorAll('.pitem').forEach((e,i)=>e.classList.toggle('sel',sel.has(i)));
-  mkrs.forEach((m,i)=>{
-    const col=getMarkerColor(AP[i]);
-    if(sel.has(i)){m.setStyle({color:'#fff',fillColor:col,fillOpacity:1,weight:3});m.setRadius(9)}
+  // Update list items - filteredIdx maps visible row to AP index
+  document.querySelectorAll('.pitem').forEach((e,j)=>{
+    const apIdx=filteredIdx[j];
+    e.classList.toggle('sel',sel.has(apIdx));
+  });
+  // Update markers
+  mkrs.forEach(m=>{
+    const ai=m._apIdx;
+    const col=getMarkerColor(AP[ai]);
+    if(sel.has(ai)){m.setStyle({color:'#fff',fillColor:col,fillOpacity:1,weight:3});m.setRadius(9)}
     else{m.setStyle({color:col,fillColor:col,fillOpacity:.7,weight:1});m.setRadius(6)}
   });
 }
@@ -757,7 +763,7 @@ function flyToParcel(i){
   // Fly to location
   map.flyTo([p._lat,p._lng],16,{duration:0.8});
   // Open popup
-  if(mkrs[i])mkrs[i].openPopup();
+  if(mkrIdxMap[i]!=null&&mkrs[mkrIdxMap[i]])mkrs[mkrIdxMap[i]].openPopup();
   // Fetch and highlight parcel boundary
   fetchParcelBoundary(p);
   // Scroll list item into view
@@ -846,14 +852,16 @@ async function loadVisibleBoundaries(){
 }
 
 // ======= MAP =======
+let mkrIdxMap={}; // maps AP index -> mkrs array index
 function plotMap(){
-  mkrs.forEach(m=>map.removeLayer(m));mkrs=[];
+  mkrs.forEach(m=>map.removeLayer(m));mkrs=[];mkrIdxMap={};
   const bounds=[];
   AP.forEach((p,i)=>{
     if(!p._lat||!p._lng)return;
     if(!isInCircle(p))return;
     const col=getMarkerColor(p);
     const m=L.circleMarker([p._lat,p._lng],{radius:6,color:col,fillColor:col,fillOpacity:.7,weight:1}).addTo(map);
+    m._apIdx=i; // store AP index on marker
     const mailAddr=buildMailAddr(p);
     const tags=[];
     if(p._tags.includes('vacant'))tags.push('<span style="color:#34d399">Vacant</span>');
@@ -874,6 +882,7 @@ function plotMap(){
       <br><br><strong>Score: ${p._score}/100</strong>
     </div>`);
     m.on('click',()=>{if(!sel.has(i)){sel.add(i);updSel()}});
+    mkrIdxMap[i]=mkrs.length;
     mkrs.push(m);bounds.push([p._lat,p._lng]);
   });
   if(bounds.length)map.fitBounds(bounds,{padding:[30,30]});
