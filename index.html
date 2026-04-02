@@ -79,6 +79,9 @@ textarea:focus{border-color:var(--acc);box-shadow:0 0 0 2px var(--acc2)}
 .ptag.noutils{background:var(--amb2);color:var(--amb)}
 .ptag.absentee{background:var(--purp2);color:var(--purp)}
 .ptag.sent{background:var(--s3);color:var(--td)}
+.ptag.subdiv{background:rgba(56,189,248,.12);color:#38bdf8}
+.pbuild{padding:1px 6px;border-radius:3px;font-size:.72rem;font-weight:600;font-family:'DM Mono',monospace}
+.pbuild.great{background:rgba(52,211,153,.12);color:var(--grn)}.pbuild.ok{background:var(--amb2);color:var(--amb)}.pbuild.poor{background:var(--red2);color:var(--red)}
 
 /* Actions bar */
 .abar{padding:8px 12px;border-top:1px solid var(--brd);background:var(--s2);display:flex;gap:6px;align-items:center;flex-wrap:wrap;flex-shrink:0}
@@ -196,7 +199,7 @@ textarea:focus{border-color:var(--acc);box-shadow:0 0 0 2px var(--acc2)}
       <!-- SEARCH -->
       <div class="tab-panel active" id="panel-search">
         <div class="controls" id="searchControls">
-          <div class="ctrl-header" onclick="toggleControls()" style="display:none;cursor:pointer;font-size:.74rem;font-weight:600;color:var(--acc);margin-bottom:4px;display:flex;justify-content:space-between;align-items:center">
+          <div class="ctrl-header" onclick="toggleControls()" style="display:none;cursor:pointer;font-size:.74rem;font-weight:600;color:var(--acc);margin-bottom:4px;justify-content:space-between;align-items:center">
             <span id="ctrlLabel">Search Criteria</span><span id="ctrlArrow">▾</span>
           </div>
           <div id="ctrlBody">
@@ -254,9 +257,15 @@ textarea:focus{border-color:var(--acc);box-shadow:0 0 0 2px var(--acc2)}
               <span><span class="pscore cool" style="font-size:.68rem">Cool</span> Score &lt;25, less likely</span>
             </div>
             <div style="display:flex;flex-wrap:wrap;gap:4px 10px;font-size:.7rem;color:var(--td);margin-top:5px">
+              <span><span class="pbuild great" style="font-size:.68rem">Build: 70+</span> Ready to build (water, sewer, frontage)</span>
+              <span><span class="pbuild ok" style="font-size:.68rem">Build: 40-69</span> Possible, some gaps</span>
+              <span><span class="pbuild poor" style="font-size:.68rem">Build: &lt;40</span> Needs significant work</span>
+            </div>
+            <div style="display:flex;flex-wrap:wrap;gap:4px 10px;font-size:.7rem;color:var(--td);margin-top:5px">
               <span><span class="ptag vacant">Vacant</span> No building, undeveloped</span>
               <span><span class="ptag absentee">Absentee</span> Owner lives elsewhere</span>
               <span><span class="ptag absentee">Out-of-State</span> Owner not in NY</span>
+              <span><span class="ptag subdiv">Subdividable</span> 10+ ac, enough frontage to split</span>
               <span><span class="ptag sent">Sent</span> You already mailed them</span>
             </div>
           </div>
@@ -267,12 +276,16 @@ textarea:focus{border-color:var(--acc);box-shadow:0 0 0 2px var(--acc2)}
         <div class="list-tools" style="padding:6px 12px;border-bottom:1px solid var(--brd);display:none;gap:6px;flex-shrink:0;align-items:center" id="listTools">
           <input type="text" id="filterText" placeholder="Filter by name or road..." style="flex:1;padding:5px 8px;font-size:.76rem" oninput="renderList()">
           <select id="sortBy" style="padding:5px 6px;font-size:.74rem;min-width:90px" onchange="resortAndRender()">
-            <option value="score">Sort: Score</option>
+            <option value="score">Sort: Sell Score</option>
+            <option value="build">Sort: Build Score</option>
             <option value="acres_desc">Acres ↓</option>
             <option value="acres_asc">Acres ↑</option>
             <option value="value_asc">Value ↑</option>
             <option value="value_desc">Value ↓</option>
           </select>
+          <label style="font-size:.72rem;color:var(--td);display:flex;align-items:center;gap:4px;white-space:nowrap;cursor:pointer">
+            <input type="checkbox" id="hideLLC" onchange="renderList();plotMap()"> Hide LLCs
+          </label>
           <label style="font-size:.72rem;color:var(--td);display:flex;align-items:center;gap:4px;white-space:nowrap;cursor:pointer">
             <input type="checkbox" id="hideSent" onchange="renderList()"> Hide sent
           </label>
@@ -344,10 +357,13 @@ Warmly,
         </div>
         <div class="op-body">
           <div class="ov-row"><input type="checkbox" id="ovFlood" onchange="toggleOverlay('flood')"><div class="ov-swatch" style="background:rgba(0,112,255,0.5)"></div><label for="ovFlood">Flood Zones (FEMA)</label></div>
-          <div class="ov-row"><input type="checkbox" id="ovWetlands" onchange="toggleOverlay('wetlands')"><div class="ov-swatch" style="background:rgba(0,200,150,0.5)"></div><label for="ovWetlands">Wetlands (NYS DEC)</label></div>
+          <div class="ov-row"><input type="checkbox" id="ovWetlands" onchange="toggleOverlay('wetlands')"><div class="ov-swatch" style="background:rgba(0,200,150,0.5)"></div><label for="ovWetlands">Wetlands (Greece)</label></div>
           <div class="ov-row"><input type="checkbox" id="ovWetBuf" onchange="toggleOverlay('wetbuf')"><div class="ov-swatch" style="background:rgba(0,200,150,0.25);border:1px dashed rgba(0,200,150,0.6)"></div><label for="ovWetBuf">100ft Buffer (Greece)</label></div>
           <div class="ov-row"><input type="checkbox" id="ovZoning" onchange="toggleOverlay('zoning')"><div class="ov-swatch" style="background:rgba(167,139,250,0.5)"></div><label for="ovZoning">Zoning (Greece only)</label></div>
           <div class="ov-row"><input type="checkbox" id="ovContours" onchange="toggleOverlay('contours')"><div class="ov-swatch" style="background:rgba(255,255,255,0.3)"></div><label for="ovContours">Contours (Greece only)</label></div>
+          <div class="ov-row"><input type="checkbox" id="ovWater" onchange="toggleOverlay('water')"><div class="ov-swatch" style="background:rgba(56,189,248,0.6)"></div><label for="ovWater">Water Mains (MCWA)</label></div>
+          <div class="ov-row"><input type="checkbox" id="ovSewer" onchange="toggleOverlay('sewer')"><div class="ov-swatch" style="background:rgba(168,85,247,0.6)"></div><label for="ovSewer">Sewer Mains</label></div>
+          <div class="ov-row"><input type="checkbox" id="ovSchool" onchange="toggleOverlay('school')"><div class="ov-swatch" style="background:rgba(251,191,36,0.4)"></div><label for="ovSchool">School Districts</label></div>
           <div class="ov-row"><input type="checkbox" id="ovLots" checked onchange="toggleLotLines()"><div class="ov-swatch" style="background:transparent;border:1px solid rgba(255,255,255,0.4)"></div><label for="ovLots">Lot Lines (zoom 15+)</label></div>
         </div>
       </div>
@@ -364,7 +380,7 @@ Warmly,
 // ======= STATE =======
 let AP=[], sel=new Set(), mkrs=[], map;
 const API='https://gisservices.its.ny.gov/arcgis/rest/services/NYS_Tax_Parcel_Centroid_Points/FeatureServer/0/query';
-const PMAP={'100':'Agricultural','105':'Farm','110':'Livestock','112':'Dairy','120':'Field Crops','130':'Truck Crops','140':'Orchards','150':'Vineyards','170':'Horse Farm','200':'Residential','210':'Single Family','215':'1-Fam 1ac+','220':'Two Family','240':'Rural Res 10ac+','241':'Rural Res/Ag','250':'Estate','260':'Seasonal','270':'Mobile Home','300':'Vacant Land','310':'Res Vacant','311':'Res Vac 10ac+','312':'Res Vac Improved','314':'Rural Vac <10ac','320':'Rural Vac 10ac+','321':'Aband Ag','322':'Rural Vac 10ac+','330':'Comm Vacant','340':'Ind Vacant','400':'Commercial','500':'Recreation','600':'Community','700':'Industrial','800':'Public Svc','900':'Wild/Forest','910':'Priv Forest','920':'Priv Hunt'};
+const PMAP={'100':'Agricultural','105':'Farm','110':'Livestock','112':'Dairy','113':'Cattle','116':'Other Livestock','117':'Horse Farm','120':'Field Crops','130':'Truck Crops','140':'Orchards','150':'Vineyards','151':'Apple Orchard','170':'Horse Farm','200':'Residential','210':'Single Family','215':'1-Fam 1ac+','220':'Two Family','240':'Rural Res 10ac+','241':'Rural Res/Ag','250':'Estate','260':'Seasonal','270':'Mobile Home','280':'Res Multi-Purpose','281':'Multi-Res/Ag','300':'Vacant Land','310':'Res Vacant','311':'Res Vac 10ac+','312':'Res Vac Improved','314':'Rural Vac <10ac','320':'Rural Vac 10ac+','321':'Aband Ag','322':'Rural Vac 10ac+','323':'Rural Vac 10ac+','330':'Comm Vacant','331':'Comm Vac w/Impr','340':'Ind Vacant','400':'Commercial','500':'Recreation','600':'Community','700':'Industrial','800':'Public Svc','900':'Wild/Forest','910':'Priv Forest','920':'Priv Hunt'};
 function pl(c){return c?PMAP[String(c)]||String(c):'—'}
 function tc(s){return s?s.toLowerCase().replace(/\b\w/g,c=>c.toUpperCase()):''}
 function fmt$(v){return v!=null?'$'+Number(v).toLocaleString():'—'}
@@ -377,7 +393,7 @@ function initMap(){
   map=L.map('map',{zoomControl:true}).setView([43.285,-77.74],12);
   darkLayer=L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{attribution:'© OSM, CARTO',maxZoom:19});
   satLayer=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{attribution:'© Esri',maxZoom:19});
-  darkLayer.addTo(map);
+  satLayer.addTo(map);currentBase='sat';
 
   // Map style toggle button
   const ctrl=L.control({position:'topright'});
@@ -551,6 +567,40 @@ function scoreParcel(p){
   return {score:Math.min(s,100),tags};
 }
 
+// ======= BUILD-READY SCORE =======
+function scoreBuildReady(p){
+  let bs=0;
+  const pc=parseInt(p.PROP_CLASS)||0;
+  // Water service available
+  if((p.WATER_DESC||'').toLowerCase().includes('comm'))bs+=15;
+  // Sewer service available
+  if((p.SEWER_DESC||'').toLowerCase().includes('comm'))bs+=15;
+  // Road frontage >= 50ft
+  if(p.FRONT&&p.FRONT>=50)bs+=20;
+  // Not in agricultural district
+  if(!p.AG_DIST_NAME||p.AG_DIST_NAME.trim()==='')bs+=10;
+  // Vacant land (ready to develop)
+  if(pc>=300&&pc<400)bs+=15;
+  // Lot depth >= 200ft
+  if(p.DEPTH&&p.DEPTH>=200)bs+=10;
+  // Manageable size (5-30 acres)
+  if(p.CALC_ACRES>=5&&p.CALC_ACRES<=30)bs+=15;
+  return Math.min(bs,100);
+}
+
+// ======= SUBDIVISION POTENTIAL =======
+function calcSubdivision(p){
+  if(!p.CALC_ACRES||p.CALC_ACRES<10)return null;
+  if(p.AG_DIST_NAME&&p.AG_DIST_NAME.trim()!=='')return null;
+  const front=p.FRONT||0;
+  if(front<100)return null;
+  // Estimate lots: min of (frontage/100) and (acres/1), capped at practical limit
+  const byFront=Math.floor(front/100);
+  const byAcres=Math.floor(p.CALC_ACRES);
+  const lots=Math.min(byFront,byAcres);
+  return lots>=2?lots:null;
+}
+
 // ======= INSTITUTIONAL FILTER =======
 const INST_KEYWORDS=[
   // Religious
@@ -568,7 +618,7 @@ const INST_KEYWORDS=[
   // Cemeteries
   'CEMETERY','MEMORIAL PARK',
   // Housing/conservation
-  'HOUSING AUTH','LAND AUTHORITY','NATURE CONSERV',
+  'HOUSING AUTH','LAND AUTHORITY','NATURE CONSERV','LAND TRUST',
 ];
 function isInstitutional(a){
   const owner=((a.PRIMARY_OWNER||'')+' '+(a.ADD_OWNER||'')).toUpperCase();
@@ -607,6 +657,8 @@ async function runSearch(){
         if(isInstitutional(f.attributes))return;
         f.attributes._lat=f.geometry?.y;f.attributes._lng=f.geometry?.x;
         const sc=scoreParcel(f.attributes);f.attributes._score=sc.score;f.attributes._tags=sc.tags;
+        f.attributes._buildScore=scoreBuildReady(f.attributes);
+        f.attributes._subdivLots=calcSubdivision(f.attributes);
         AP.push(f.attributes)});
       ss('ld',`<span class="spin"></span> ${AP.length} parcels...`);
       if(fs.length<1000||!d.exceededTransferLimit)break;
@@ -648,11 +700,17 @@ function renderList(){
   const tracker=getTracker();
   const filterStr=(document.getElementById('filterText')?.value||'').toLowerCase();
   const hideSent=document.getElementById('hideSent')?.checked||false;
+  const hideLLC=document.getElementById('hideLLC')?.checked||false;
 
   filteredIdx=[];
   AP.forEach((p,i)=>{
     // Filter: circle
     if(!isInCircle(p))return;
+    // Filter: hide LLCs/corporate entities
+    if(hideLLC){
+      const owner=(p.PRIMARY_OWNER||'').toUpperCase();
+      if(owner.includes('LLC')||owner.includes('INC')||owner.includes('CORP')||owner.includes('TRUST')||owner.includes('ASSOC')||owner.includes('PARTNER')||owner.includes('ENTERPRISE'))return;
+    }
     // Filter: hide sent
     if(hideSent){
       const sentKey=p.PRINT_KEY||p.SBL||'';
@@ -674,6 +732,8 @@ function renderList(){
     const mailAddr=buildMailAddr(p);
     const scLbl=p._score>=50?'hot':p._score>=25?'warm':'cool';
     const scTxt=p._score>=50?'Hot Lead':p._score>=25?'Warm':'Cool';
+    const bsLbl=p._buildScore>=70?'great':p._buildScore>=40?'ok':'poor';
+    const dims=p.FRONT?`${p.FRONT}ft${p.DEPTH?' × '+p.DEPTH+'ft':''}`:''
     const sentKey=p.PRINT_KEY||p.SBL||'';
     const wasSent=tracker[sentKey];
     d.innerHTML=`
@@ -685,12 +745,15 @@ function renderList(){
         <div class="pmail">✉ ${mailAddr||'No mailing address'}</div>
         <div class="pmeta">
           <span class="pacres">${p.CALC_ACRES?.toFixed(1)||'?'} ac</span>
+          ${dims?'<span>'+dims+'</span>':''}
           <span class="pscore ${scLbl}">${scTxt}</span>
+          <span class="pbuild ${bsLbl}">Build: ${p._buildScore}</span>
           <span>${pl(p.PROP_CLASS)}</span>
           <span>${fmt$(p.FULL_MARKET_VAL||p.TOTAL_AV)}</span>
           ${p._tags.includes('vacant')?'<span class="ptag vacant">Vacant</span>':''}
           ${p._tags.includes('absentee')?'<span class="ptag absentee">Absentee</span>':''}
           ${p._tags.includes('out-of-state')?'<span class="ptag absentee">Out-of-State</span>':''}
+          ${p._subdivLots?'<span class="ptag subdiv">Subdividable ~'+p._subdivLots+' lots</span>':''}
           ${wasSent?'<span class="ptag sent">Sent '+wasSent.date+'</span>':''}
         </div>
       </div>`;
@@ -709,6 +772,7 @@ function resortAndRender(){
   const sortBy=document.getElementById('sortBy').value;
   switch(sortBy){
     case'score':AP.sort((a,b)=>b._score-a._score||b.CALC_ACRES-a.CALC_ACRES);break;
+    case'build':AP.sort((a,b)=>b._buildScore-a._buildScore||b._score-a._score||b.CALC_ACRES-a.CALC_ACRES);break;
     case'acres_desc':AP.sort((a,b)=>b.CALC_ACRES-a.CALC_ACRES);break;
     case'acres_asc':AP.sort((a,b)=>a.CALC_ACRES-b.CALC_ACRES);break;
     case'value_asc':AP.sort((a,b)=>(a.FULL_MARKET_VAL||a.TOTAL_AV||0)-(b.FULL_MARKET_VAL||b.TOTAL_AV||0));break;
@@ -729,7 +793,7 @@ function buildMailAddr(p){
 }
 
 function togSel(i){sel.has(i)?sel.delete(i):sel.add(i);updSel()}
-function selAll(){AP.forEach((_,i)=>sel.add(i));updSel()}
+function selAll(){filteredIdx.forEach(i=>sel.add(i));updSel()}
 function selNone(){sel.clear();updSel()}
 function updSel(){
   document.getElementById('selN').textContent=sel.size;
@@ -768,7 +832,8 @@ function flyToParcel(i){
   fetchParcelBoundary(p);
   // Scroll list item into view
   const items=document.querySelectorAll('.pitem');
-  if(items[i])items[i].scrollIntoView({behavior:'smooth',block:'nearest'});
+  const visIdx=filteredIdx.indexOf(i);
+  if(visIdx>=0&&items[visIdx])items[visIdx].scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 
 // ======= PARCEL BOUNDARIES =======
@@ -868,18 +933,23 @@ function plotMap(){
     if(p._tags.includes('absentee'))tags.push('<span style="color:#a78bfa">Absentee Owner</span>');
     if(p._tags.includes('out-of-state'))tags.push('<span style="color:#a78bfa">Out-of-State</span>');
     if(p._tags.includes('land-only'))tags.push('<span style="color:#f59e0b">Land Value Only</span>');
+    const dims=p.FRONT?`${p.FRONT}ft${p.DEPTH?' × '+p.DEPTH+'ft':''}  frontage`:'';
+    const bsCol=p._buildScore>=70?'#34d399':p._buildScore>=40?'#f59e0b':'#ef4444';
     m.bindPopup(`<div style="min-width:220px">
       <strong style="font-size:.88rem">${tc(p.PRIMARY_OWNER||'Unknown')}</strong>
       ${p.ADD_OWNER?'<br>'+tc(p.ADD_OWNER):''}
       <br><span style="color:#888">${tc(p.PARCEL_ADDR||'')}</span>
       <br><br><strong style="color:#34d399">${p.CALC_ACRES?.toFixed(1)} acres</strong> · ${pl(p.PROP_CLASS)}
+      ${dims?'<br>'+dims:''}
       <br>Market Value: ${fmt$(p.FULL_MARKET_VAL||p.TOTAL_AV)}
       ${p.YR_BLT?'<br>Year Built: '+p.YR_BLT:'<br><em style="color:#34d399">No building on record</em>'}
       <br>Water: ${p.WATER_DESC||'Unknown'} · Sewer: ${p.SEWER_DESC||'Unknown'}
       ${p.AG_DIST_NAME?'<br>Ag District: '+p.AG_DIST_NAME:''}
+      ${p._subdivLots?'<br><strong style="color:#38bdf8">Subdividable: ~'+p._subdivLots+' potential lots</strong>':''}
       <br><br><strong>Mailing Address:</strong><br>${mailAddr||'Not available'}
       ${tags.length?'<br><br>'+tags.join(' · '):''}
-      <br><br><strong>Score: ${p._score}/100</strong>
+      <br><br><strong>Sell Score: ${p._score}/100</strong> · <strong style="color:${bsCol}">Build: ${p._buildScore}/100</strong>
+      ${p.PRINT_KEY?'<br><a href="https://www.monroecounty.gov/etc/rp/?search='+encodeURIComponent(p.PRINT_KEY)+'" target="_blank" style="color:#4c8dff;font-size:.75rem">View County Records ↗</a>':''}
     </div>`);
     m.on('click',()=>{if(!sel.has(i)){sel.add(i);updSel()}});
     mkrIdxMap[i]=mkrs.length;
@@ -1040,10 +1110,10 @@ function initOverlays(){
     opacity:0.45
   });
 
-  // NYS DEC Freshwater Wetlands — state, covers all NY
+  // Wetlands — Greece GIS (state regulated + federal NWI)
   overlays.wetlands=L.esri.dynamicMapLayer({
-    url:DEC_WETLANDS_MS,
-    layers:[0],
+    url:GREECE_MS,
+    layers:[84,86],
     opacity:0.4
   });
 
@@ -1059,6 +1129,30 @@ function initOverlays(){
     url:GREECE_MS,
     layers:[73],
     opacity:0.35
+  });
+
+  // Water Mains — MCWA county-wide (Monroe County GIS)
+  const MC_WATER='https://maps.monroecounty.gov/server/rest/services/City_MCWA_Water/City_MCWA_Water/MapServer';
+  overlays.water=L.esri.dynamicMapLayer({
+    url:MC_WATER,
+    layers:[5],
+    opacity:0.6
+  });
+
+  // Sewer Mains — Monroe County (Greece + Village of Hilton)
+  const MC_SEWER='https://maps.monroecounty.gov/server/rest/services/DES/Municipal_Sewer_Systems/MapServer';
+  overlays.sewer=L.esri.dynamicMapLayer({
+    url:MC_SEWER,
+    layers:[87,40],
+    opacity:0.5
+  });
+
+  // School Districts — Monroe County
+  const MC_EDU='https://maps.monroecounty.gov/server/rest/services/Base_Layers/Education_Layers/MapServer';
+  overlays.school=L.esri.dynamicMapLayer({
+    url:MC_EDU,
+    layers:[4],
+    opacity:0.3
   });
 
   // Identify zoning on click
@@ -1084,7 +1178,7 @@ function initOverlays(){
   });
 }
 
-const ovIdMap={flood:'ovFlood',wetlands:'ovWetlands',wetbuf:'ovWetBuf',zoning:'ovZoning',contours:'ovContours'};
+const ovIdMap={flood:'ovFlood',wetlands:'ovWetlands',wetbuf:'ovWetBuf',zoning:'ovZoning',contours:'ovContours',water:'ovWater',sewer:'ovSewer',school:'ovSchool'};
 function toggleOverlay(name){
   const cb=document.getElementById(ovIdMap[name]);
   if(!overlays[name])return;
@@ -1105,11 +1199,28 @@ function toggleLotLines(){
   }
 }
 
+// ======= URL PARAMS (deep link to parcel) =======
+function checkUrlParams(){
+  const params=new URLSearchParams(window.location.search);
+  const lat=parseFloat(params.get('lat'));
+  const lng=parseFloat(params.get('lng'));
+  const pk=params.get('pk');
+  if(lat&&lng){
+    map.setView([lat,lng],17);
+    const marker=L.circleMarker([lat,lng],{radius:10,color:'#4c8dff',fillColor:'#4c8dff',fillOpacity:1,weight:3}).addTo(map);
+    if(pk){
+      // Fetch and highlight the parcel boundary
+      fetchParcelBoundary({PRINT_KEY:pk,SBL:pk});
+    }
+  }
+}
+
 // ======= INIT =======
 initMap();
 initBoundaryLayer();
 initOverlays();
 loadUserInfo();
+checkUrlParams();
 </script>
 </body>
 </html>

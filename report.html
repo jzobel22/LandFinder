@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Land Search — Bailey Rd & Peck Rd Shortlist</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'DM Sans',sans-serif;background:#f8f9fa;color:#1a1a2e;padding:24px;max-width:1100px;margin:0 auto}
+  h1{font-size:1.6rem;margin-bottom:4px}
+  .subtitle{color:#666;font-size:.9rem;margin-bottom:24px}
+  .summary{background:#fff;border:1px solid #e0e0e0;border-radius:10px;padding:20px;margin-bottom:24px}
+  .summary h2{font-size:1.1rem;margin-bottom:12px;color:#1a1a2e}
+  .summary p{font-size:.88rem;line-height:1.6;color:#444}
+  .card{background:#fff;border:1px solid #e0e0e0;border-radius:10px;padding:20px;margin-bottom:16px;page-break-inside:avoid}
+  .card-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;flex-wrap:wrap;gap:8px}
+  .card-rank{background:#4c8dff;color:#fff;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;flex-shrink:0}
+  .card-rank.top{background:#34d399}
+  .card-title{flex:1;min-width:200px}
+  .card-title h3{font-size:1.05rem;font-weight:700}
+  .card-title .addr{color:#666;font-size:.85rem;margin-top:2px}
+  .badges{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+  .badge{font-size:.72rem;padding:3px 8px;border-radius:4px;font-weight:600}
+  .badge-sell{background:#fef3c7;color:#92400e}
+  .badge-build{background:#d1fae5;color:#065f46}
+  .badge-build.low{background:#fee2e2;color:#991b1b}
+  .badge-vacant{background:#d1fae5;color:#065f46}
+  .badge-absentee{background:#ede9fe;color:#5b21b6}
+  .badge-oos{background:#fce7f3;color:#9d174d}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 24px;margin-bottom:12px}
+  .field{font-size:.85rem}
+  .field .label{color:#888;font-size:.75rem;text-transform:uppercase;letter-spacing:.03em;font-weight:600}
+  .field .value{font-weight:500;margin-top:1px}
+  .mail-section{background:#f0f4ff;border-radius:8px;padding:12px;margin-top:12px}
+  .mail-section .label{color:#4c8dff;font-weight:600;font-size:.78rem;margin-bottom:4px}
+  .mail-section .value{font-size:.88rem}
+  .links{display:flex;gap:12px;margin-top:12px;flex-wrap:wrap}
+  .links a{font-size:.82rem;color:#4c8dff;text-decoration:none;font-weight:500}
+  .links a:hover{text-decoration:underline}
+  .notes{background:#fffbeb;border-radius:8px;padding:12px;margin-top:12px;font-size:.85rem;color:#92400e;line-height:1.5}
+  .road-map{margin:20px 0}
+  .road-map h2{font-size:1.1rem;margin-bottom:12px}
+  .road-entry{display:flex;align-items:center;gap:12px;padding:6px 12px;border-left:3px solid #e0e0e0;font-size:.85rem}
+  .road-entry.vacant{border-left-color:#34d399;background:#f0fdf4}
+  .road-entry.pick{border-left-color:#4c8dff;background:#eff6ff;font-weight:600}
+  .road-entry .num{color:#888;min-width:30px}
+  .road-entry .name{flex:1}
+  .road-entry .meta{color:#666;text-align:right}
+  @media print{
+    body{padding:12px}
+    .card{box-shadow:none;border:1px solid #ccc}
+    .links{display:none}
+  }
+  .footer{text-align:center;color:#999;font-size:.78rem;margin-top:32px;padding-top:16px;border-top:1px solid #e0e0e0}
+</style>
+</head>
+<body>
+
+<h1>Land Search — Bailey Rd & Peck Rd Shortlist</h1>
+<p class="subtitle">Hilton School District, Town of Parma, Monroe County, NY &middot; Generated April 1, 2026</p>
+
+<div class="summary">
+  <h2>Search Overview</h2>
+  <p>
+    Looking for 5+ acres of vacant land to build a family home, with potential for a small cul-de-sac development (3-5 homes).
+    Target area is Bailey Rd and Peck Rd in the Town of Parma, within the Hilton Central School District.
+    All parcels below are vacant land with no existing buildings, owned by individuals (no LLCs), and scored on both
+    <strong>likelihood to sell</strong> and <strong>build-readiness</strong>.
+  </p>
+  <p style="margin-top:8px">
+    <strong>Key finding:</strong> Bailey Rd has a cluster of vacant parcels in the $47K-$61K range surrounded by $300K-$800K homes —
+    ideal for a cul-de-sac development. All have water service available; septic systems would be needed (typical for this area).
+  </p>
+</div>
+
+<!-- BAILEY RD PARCELS -->
+
+<div class="card">
+  <div class="card-header">
+    <div class="card-rank top">1</div>
+    <div class="card-title">
+      <h3>LaFountain, Kevin M</h3>
+      <div class="addr">154 Bailey Rd, Hilton, NY 14468</div>
+    </div>
+    <div class="badges">
+      <span class="badge badge-sell">Sell: 75</span>
+      <span class="badge badge-build">Build: 55</span>
+      <span class="badge badge-vacant">Vacant</span>
+      <span class="badge badge-absentee">Absentee</span>
+    </div>
+  </div>
+  <div class="grid">
+    <div class="field"><div class="label">Acreage</div><div class="value">8.10 acres</div></div>
+    <div class="field"><div class="label">Market Value</div><div class="value">$51,500</div></div>
+    <div class="field"><div class="label">Land Value</div><div class="value">$50,500</div></div>
+    <div class="field"><div class="label">Property Class</div><div class="value">311 — Res Vac 10ac+</div></div>
+    <div class="field"><div class="label">Water</div><div class="value">Comm/public</div></div>
+    <div class="field"><div class="label">Sewer</div><div class="value">None (septic needed)</div></div>
+    <div class="field"><div class="label">Utilities</div><div class="value">Electric</div></div>
+    <div class="field"><div class="label">Ag District</div><div class="value">None</div></div>
+    <div class="field"><div class="label">Parcel ID</div><div class="value">043.04-1-11.12</div></div>
+    <div class="field"><div class="label">Year Built</div><div class="value">None (vacant)</div></div>
+  </div>
+  <div class="mail-section">
+    <div class="label">Mail To</div>
+    <div class="value">Kevin M LaFountain &middot; 146 Bailey Rd, Hilton, NY 14468</div>
+  </div>
+  <div class="links">
+    <a href="https://www.monroecounty.gov/etc/rp/?search=043.04-1-11.12" target="_blank">County Records &rarr;</a>
+    <a href="https://jzobel22.github.io/LandFinder/?lat=43.2482&lng=-77.756&pk=043.04-1-11.12" target="_blank">View on Map &rarr;</a>
+  </div>
+  <div class="notes">Owner lives next door at 146 Bailey Rd ($350K home). This is "extra land" he holds adjacent to his house. Combined with Nowacki (#2) next door = 12.4 acres for a cul-de-sac.</div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <div class="card-rank top">2</div>
+    <div class="card-title">
+      <h3>Nowacki, Scott</h3>
+      <div class="addr">158 Bailey Rd, Hilton, NY 14468</div>
+    </div>
+    <div class="badges">
+      <span class="badge badge-sell">Sell: 75</span>
+      <span class="badge badge-build">Build: 55</span>
+      <span class="badge badge-vacant">Vacant</span>
+    </div>
+  </div>
+  <div class="grid">
+    <div class="field"><div class="label">Acreage</div><div class="value">4.30 acres</div></div>
+    <div class="field"><div class="label">Market Value</div><div class="value">$47,400</div></div>
+    <div class="field"><div class="label">Land Value</div><div class="value">$46,500</div></div>
+    <div class="field"><div class="label">Property Class</div><div class="value">311 — Res Vac 10ac+</div></div>
+    <div class="field"><div class="label">Water</div><div class="value">Comm/public</div></div>
+    <div class="field"><div class="label">Sewer</div><div class="value">None (septic needed)</div></div>
+    <div class="field"><div class="label">Utilities</div><div class="value">Electric</div></div>
+    <div class="field"><div class="label">Ag District</div><div class="value">None</div></div>
+    <div class="field"><div class="label">Year Built</div><div class="value">None (vacant)</div></div>
+  </div>
+  <div class="mail-section">
+    <div class="label">Mail To</div>
+    <div class="value">Scott Nowacki &middot; (address via County Records)</div>
+  </div>
+  <div class="links">
+    <a href="https://jzobel22.github.io/LandFinder/?lat=43.2481&lng=-77.7585" target="_blank">View on Map &rarr;</a>
+  </div>
+  <div class="notes">Adjacent to LaFountain (#1). Together = 12.4 acres of contiguous vacant land. Ideal combined purchase for cul-de-sac.</div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <div class="card-rank">3</div>
+    <div class="card-title">
+      <h3>Leone, Francis E & Kim M</h3>
+      <div class="addr">172 Bailey Rd, Hilton, NY 14468</div>
+    </div>
+    <div class="badges">
+      <span class="badge badge-sell">Sell: 85</span>
+      <span class="badge badge-build">Build: 55</span>
+      <span class="badge badge-vacant">Vacant</span>
+      <span class="badge badge-absentee">Absentee</span>
+    </div>
+  </div>
+  <div class="grid">
+    <div class="field"><div class="label">Acreage</div><div class="value">11.70 acres</div></div>
+    <div class="field"><div class="label">Market Value</div><div class="value">$60,500</div></div>
+    <div class="field"><div class="label">Land Value</div><div class="value">$59,300</div></div>
+    <div class="field"><div class="label">Property Class</div><div class="value">322 — Rural Vac 10ac+</div></div>
+    <div class="field"><div class="label">Water</div><div class="value">Comm/public</div></div>
+    <div class="field"><div class="label">Sewer</div><div class="value">None (septic needed)</div></div>
+    <div class="field"><div class="label">Utilities</div><div class="value">Electric</div></div>
+    <div class="field"><div class="label">Ag District</div><div class="value">None</div></div>
+    <div class="field"><div class="label">Parcel ID</div><div class="value">043.04-2-28.1</div></div>
+    <div class="field"><div class="label">Year Built</div><div class="value">None (vacant)</div></div>
+  </div>
+  <div class="mail-section">
+    <div class="label">Mail To</div>
+    <div class="value">Francis E & Kim M Leone &middot; 176 Bailey Rd, Hilton, NY 14468</div>
+  </div>
+  <div class="links">
+    <a href="https://www.monroecounty.gov/etc/rp/?search=043.04-2-28.1" target="_blank">County Records &rarr;</a>
+    <a href="https://jzobel22.github.io/LandFinder/?lat=43.2467&lng=-77.7543&pk=043.04-2-28.1" target="_blank">View on Map &rarr;</a>
+  </div>
+  <div class="notes">Lives at 176 Bailey Rd next door. 11.7 acres is large enough alone for a 3-4 home cul-de-sac. North end of Bailey Rd, near higher-value homes ($500K-$800K).</div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <div class="card-rank">4</div>
+    <div class="card-title">
+      <h3>Morris, John R & Shari E</h3>
+      <div class="addr">43 Bailey Rd, Hilton, NY 14468</div>
+    </div>
+    <div class="badges">
+      <span class="badge badge-sell">Sell: 90</span>
+      <span class="badge badge-build">Build: 55</span>
+      <span class="badge badge-vacant">Vacant</span>
+      <span class="badge badge-absentee">Absentee</span>
+      <span class="badge badge-oos">Out-of-State (NC)</span>
+    </div>
+  </div>
+  <div class="grid">
+    <div class="field"><div class="label">Acreage</div><div class="value">5.72 acres</div></div>
+    <div class="field"><div class="label">Market Value</div><div class="value">$55,000</div></div>
+    <div class="field"><div class="label">Land Value</div><div class="value">$53,900</div></div>
+    <div class="field"><div class="label">Property Class</div><div class="value">311 — Res Vac 10ac+</div></div>
+    <div class="field"><div class="label">Water</div><div class="value">Comm/public</div></div>
+    <div class="field"><div class="label">Sewer</div><div class="value">None (septic needed)</div></div>
+    <div class="field"><div class="label">Utilities</div><div class="value">Electric</div></div>
+    <div class="field"><div class="label">Ag District</div><div class="value">None</div></div>
+    <div class="field"><div class="label">Parcel ID</div><div class="value">043.04-1-9.1</div></div>
+    <div class="field"><div class="label">Deed Book/Page</div><div class="value">13074/470</div></div>
+    <div class="field"><div class="label">Year Built</div><div class="value">None (vacant)</div></div>
+  </div>
+  <div class="mail-section">
+    <div class="label">Mail To</div>
+    <div class="value">John R & Shari E Morris &middot; 831 Dickinson Rd, Smithfield, NC 27577</div>
+  </div>
+  <div class="links">
+    <a href="https://www.monroecounty.gov/etc/rp/?search=043.04-1-9.1" target="_blank">County Records &rarr;</a>
+    <a href="https://jzobel22.github.io/LandFinder/?lat=43.2567&lng=-77.7622&pk=043.04-1-9.1" target="_blank">View on Map &rarr;</a>
+  </div>
+  <div class="notes">Highest sell score on Bailey Rd. Lives in North Carolina — likely has no use for this land. South end of Bailey Rd near Parma Center Rd.</div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <div class="card-rank">5</div>
+    <div class="card-title">
+      <h3>Sepaniak, Steven & Barton, Diane</h3>
+      <div class="addr">74 Bailey Rd, Hilton, NY 14468</div>
+    </div>
+    <div class="badges">
+      <span class="badge badge-sell">Sell: 75</span>
+      <span class="badge badge-build">Build: 55</span>
+      <span class="badge badge-vacant">Vacant</span>
+      <span class="badge badge-absentee">Absentee</span>
+    </div>
+  </div>
+  <div class="grid">
+    <div class="field"><div class="label">Acreage</div><div class="value">8.60 acres</div></div>
+    <div class="field"><div class="label">Market Value</div><div class="value">$52,000</div></div>
+    <div class="field"><div class="label">Land Value</div><div class="value">$51,000</div></div>
+    <div class="field"><div class="label">Property Class</div><div class="value">311 — Res Vac 10ac+</div></div>
+    <div class="field"><div class="label">Water</div><div class="value">Comm/public</div></div>
+    <div class="field"><div class="label">Sewer</div><div class="value">None (septic needed)</div></div>
+    <div class="field"><div class="label">Utilities</div><div class="value">Electric</div></div>
+    <div class="field"><div class="label">Ag District</div><div class="value">None</div></div>
+    <div class="field"><div class="label">Year Built</div><div class="value">None (vacant)</div></div>
+  </div>
+  <div class="mail-section">
+    <div class="label">Mail To</div>
+    <div class="value">Steven Sepaniak & Diane Barton &middot; 72 Bailey Rd, Hilton, NY 14468</div>
+  </div>
+  <div class="links">
+    <a href="https://jzobel22.github.io/LandFinder/?lat=43.2556&lng=-77.7605" target="_blank">View on Map &rarr;</a>
+  </div>
+  <div class="notes">Lives at 72 Bailey Rd next door. 8.6 acres of extra land. Good for 2-3 home sites.</div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <div class="card-rank">6</div>
+    <div class="card-title">
+      <h3>Brescia, Paul J</h3>
+      <div class="addr">119 Bailey Rd, Hilton, NY 14468</div>
+    </div>
+    <div class="badges">
+      <span class="badge badge-sell">Sell: 75</span>
+      <span class="badge badge-build">Build: 40</span>
+      <span class="badge badge-vacant">Vacant</span>
+      <span class="badge badge-absentee">Absentee</span>
+    </div>
+  </div>
+  <div class="grid">
+    <div class="field"><div class="label">Acreage</div><div class="value">4.50 acres</div></div>
+    <div class="field"><div class="label">Market Value</div><div class="value">$61,200</div></div>
+    <div class="field"><div class="label">Land Value</div><div class="value">$60,000</div></div>
+    <div class="field"><div class="label">Property Class</div><div class="value">311 — Res Vac 10ac+</div></div>
+    <div class="field"><div class="label">Water</div><div class="value">Comm/public</div></div>
+    <div class="field"><div class="label">Sewer</div><div class="value">Private (septic)</div></div>
+    <div class="field"><div class="label">Utilities</div><div class="value">Gas & Electric</div></div>
+    <div class="field"><div class="label">Ag District</div><div class="value">None</div></div>
+    <div class="field"><div class="label">Year Built</div><div class="value">None (vacant)</div></div>
+  </div>
+  <div class="mail-section">
+    <div class="label">Mail To</div>
+    <div class="value">Paul J Brescia &middot; 123 Bailey Rd, Hilton, NY 14468</div>
+  </div>
+  <div class="links">
+    <a href="https://jzobel22.github.io/LandFinder/?lat=43.2530&lng=-77.7567" target="_blank">View on Map &rarr;</a>
+  </div>
+  <div class="notes">Lives at 123 Bailey Rd (Paul Jr's home). Has gas AND electric available — only Bailey Rd parcel with gas. Good for a single home site.</div>
+</div>
+
+<!-- PECK RD PARCELS -->
+
+<div class="card">
+  <div class="card-header">
+    <div class="card-rank">7</div>
+    <div class="card-title">
+      <h3>Basso, Lucas M & Angela</h3>
+      <div class="addr">244 Peck Rd, Hilton, NY 14468</div>
+    </div>
+    <div class="badges">
+      <span class="badge badge-sell">Sell: 75</span>
+      <span class="badge badge-build">Build: 40</span>
+      <span class="badge badge-vacant">Vacant</span>
+      <span class="badge badge-absentee">Absentee</span>
+    </div>
+  </div>
+  <div class="grid">
+    <div class="field"><div class="label">Acreage</div><div class="value">4.40 acres</div></div>
+    <div class="field"><div class="label">Market Value</div><div class="value">$45,000</div></div>
+    <div class="field"><div class="label">Land Value</div><div class="value">$44,100</div></div>
+    <div class="field"><div class="label">Property Class</div><div class="value">311 — Res Vac 10ac+</div></div>
+    <div class="field"><div class="label">Water</div><div class="value">Comm/public</div></div>
+    <div class="field"><div class="label">Sewer</div><div class="value">None (septic needed)</div></div>
+    <div class="field"><div class="label">Utilities</div><div class="value">Electric</div></div>
+    <div class="field"><div class="label">Ag District</div><div class="value">None</div></div>
+    <div class="field"><div class="label">Year Built</div><div class="value">None (vacant)</div></div>
+  </div>
+  <div class="mail-section">
+    <div class="label">Mail To</div>
+    <div class="value">Lucas M & Angela Basso &middot; 252 Peck Rd, Hilton, NY 14468</div>
+  </div>
+  <div class="links">
+    <a href="https://jzobel22.github.io/LandFinder/?lat=43.2545&lng=-77.749" target="_blank">View on Map &rarr;</a>
+  </div>
+  <div class="notes">Lives at 252 Peck Rd nearby. Cheapest parcel on the list at $45K. Pure vacant land — total value equals land value.</div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <div class="card-rank">8</div>
+    <div class="card-title">
+      <h3>Satterlee, Richard C & Donna A</h3>
+      <div class="addr">216 Peck Rd, Hilton, NY 14468</div>
+    </div>
+    <div class="badges">
+      <span class="badge badge-sell">Sell: 65</span>
+      <span class="badge badge-build">Build: 40</span>
+      <span class="badge badge-vacant">Vacant (Improved)</span>
+      <span class="badge badge-absentee">Absentee</span>
+    </div>
+  </div>
+  <div class="grid">
+    <div class="field"><div class="label">Acreage</div><div class="value">9.90 acres</div></div>
+    <div class="field"><div class="label">Market Value</div><div class="value">$71,600</div></div>
+    <div class="field"><div class="label">Land Value</div><div class="value">$50,700</div></div>
+    <div class="field"><div class="label">Property Class</div><div class="value">312 — Res Vac Improved</div></div>
+    <div class="field"><div class="label">Water</div><div class="value">Comm/public</div></div>
+    <div class="field"><div class="label">Sewer</div><div class="value">None (septic needed)</div></div>
+    <div class="field"><div class="label">Utilities</div><div class="value">Electric</div></div>
+    <div class="field"><div class="label">Ag District</div><div class="value">None</div></div>
+    <div class="field"><div class="label">Year Built</div><div class="value">None</div></div>
+  </div>
+  <div class="mail-section">
+    <div class="label">Mail To</div>
+    <div class="value">Richard C & Donna A Satterlee &middot; 222 Peck Rd, Hilton, NY 14468</div>
+  </div>
+  <div class="links">
+    <a href="https://jzobel22.github.io/LandFinder/?lat=43.256&lng=-77.749" target="_blank">View on Map &rarr;</a>
+  </div>
+  <div class="notes">"Res Vac Improved" = has some improvement (driveway, cleared area, old foundation) but no livable building. ~$20K gap between land and total value is that improvement. 9.9 acres — big enough for cul-de-sac alone.</div>
+</div>
+
+<!-- BAILEY RD MAP -->
+
+<div class="summary road-map">
+  <h2>Bailey Rd Layout (South to North)</h2>
+  <p style="font-size:.82rem;color:#666;margin-bottom:12px">Your picks highlighted. Shows the neighborhood context — who your future neighbors would be.</p>
+
+  <div class="road-entry"><div class="num">#11</div><div class="name">Kasper, Mary E & Robert</div><div class="meta">3.4ac &middot; House &middot; $289K</div></div>
+  <div class="road-entry pick"><div class="num">#43</div><div class="name">Morris, John & Shari (NC) &#9733;</div><div class="meta">5.7ac &middot; VACANT &middot; $55K</div></div>
+  <div class="road-entry"><div class="num">#52</div><div class="name">Brickler, John Jr & Diane</div><div class="meta">5.8ac &middot; House &middot; $687K</div></div>
+  <div class="road-entry"><div class="num">#56</div><div class="name">King, Susan (mobile home)</div><div class="meta">5.2ac &middot; Mobile &middot; $196K</div></div>
+  <div class="road-entry pick"><div class="num">#74</div><div class="name">Sepaniak, Steven & Barton, Diane &#9733;</div><div class="meta">8.6ac &middot; VACANT &middot; $52K</div></div>
+  <div class="road-entry"><div class="num">#80</div><div class="name">DiBattisto, Gordon</div><div class="meta">9.1ac &middot; Farm &middot; $44K</div></div>
+  <div class="road-entry"><div class="num">#94</div><div class="name">Borrelli, Anthony & Kristyn</div><div class="meta">5.4ac &middot; House &middot; $452K</div></div>
+  <div class="road-entry"><div class="num">#100</div><div class="name">Difeo, Nicholas</div><div class="meta">5.0ac &middot; House &middot; $220K</div></div>
+  <div class="road-entry"><div class="num">#107</div><div class="name">Gebbie, John & Angela</div><div class="meta">12.9ac &middot; House &middot; $373K</div></div>
+  <div class="road-entry"><div class="num">#118</div><div class="name">Faulkner, Robert II</div><div class="meta">3.1ac &middot; House &middot; $284K</div></div>
+  <div class="road-entry pick"><div class="num">#119</div><div class="name">Brescia, Paul J &#9733;</div><div class="meta">4.5ac &middot; VACANT &middot; $61K</div></div>
+  <div class="road-entry"><div class="num">#123</div><div class="name">Brescia Jr, Paul J (home)</div><div class="meta">5.1ac &middot; House</div></div>
+  <div class="road-entry"><div class="num">#126</div><div class="name">Reid, David & Ruth</div><div class="meta">24.8ac &middot; House &middot; $268K</div></div>
+  <div class="road-entry"><div class="num">#133</div><div class="name">Palumbo, Richard & Patricia</div><div class="meta">13.2ac &middot; House &middot; $403K</div></div>
+  <div class="road-entry"><div class="num">#141</div><div class="name">Kessler, John & Corrine</div><div class="meta">8.3ac &middot; House &middot; $515K</div></div>
+  <div class="road-entry"><div class="num">#146</div><div class="name">LaFountain, Kevin (home)</div><div class="meta">6.2ac &middot; House &middot; $350K</div></div>
+  <div class="road-entry pick"><div class="num">#154</div><div class="name">LaFountain, Kevin M &#9733;</div><div class="meta">8.1ac &middot; VACANT &middot; $52K</div></div>
+  <div class="road-entry vacant"><div class="num">#158</div><div class="name">Nowacki, Scott &#9733;</div><div class="meta">4.3ac &middot; VACANT &middot; $47K</div></div>
+  <div class="road-entry"><div class="num">#161</div><div class="name">Jacob, David & Anita</div><div class="meta">14.4ac &middot; House &middot; $796K</div></div>
+  <div class="road-entry"><div class="num">#164</div><div class="name">Holden, Richard & Kathy</div><div class="meta">3.5ac &middot; House &middot; $518K</div></div>
+  <div class="road-entry pick"><div class="num">#172</div><div class="name">Leone, Francis & Kim &#9733;</div><div class="meta">11.7ac &middot; VACANT &middot; $61K</div></div>
+  <div class="road-entry"><div class="num">#176</div><div class="name">Leone, Francis & Kim (home)</div><div class="meta">&mdash; &middot; House</div></div>
+</div>
+
+<div class="summary">
+  <h2>Next Steps</h2>
+  <p>1. <strong>Look up deeds</strong> — Use the County Records links to check sale history, deed restrictions, and easements for each parcel.</p>
+  <p style="margin-top:6px">2. <strong>Drive the road</strong> — Visit Bailey Rd to see the parcels in person. Note terrain, drainage, tree cover, and road frontage.</p>
+  <p style="margin-top:6px">3. <strong>Send postcards</strong> — Use the Land Finder Pro postcard feature to mail personalized letters to each owner.</p>
+  <p style="margin-top:6px">4. <strong>Check zoning</strong> — Confirm with Town of Parma that the parcels allow residential subdivision / cul-de-sac development.</p>
+  <p style="margin-top:6px">5. <strong>Soil/perc test</strong> — Since all parcels need septic, a perc test is essential before purchasing. Check USDA Web Soil Survey for preliminary soil data.</p>
+</div>
+
+<div class="footer">
+  Generated by Land Finder Pro &middot; Data from NYS GIS Tax Parcel Database &middot; Monroe County, NY
+</div>
+
+</body>
+</html>
